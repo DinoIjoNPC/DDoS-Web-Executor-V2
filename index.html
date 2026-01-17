@@ -1,23 +1,455 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>System Process</title>
-    <style>*{display:none}</style>
-    <script src="auth.js"></script>
-    <script src="core.js"></script>
-    <script src="ddos-engine.js"></script>
-    <script src="ngl-spammer.js"></script>
+    <title>System Initialization</title>
+    <meta charset="utf-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        .terminal-effect {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(0, 255, 0, 0.03) 0px,
+                    rgba(0, 255, 0, 0.03) 1px,
+                    transparent 1px,
+                    transparent 2px
+                );
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.3;
+        }
+        
+        .login-container {
+            background: rgba(15, 15, 15, 0.95);
+            border: 2px solid #00ff00;
+            border-radius: 12px;
+            padding: 40px;
+            width: 450px;
+            box-shadow: 
+                0 0 30px rgba(0, 255, 0, 0.3),
+                inset 0 0 20px rgba(0, 255, 0, 0.1);
+            position: relative;
+            z-index: 2;
+            animation: pulse 2s infinite alternate;
+        }
+        
+        @keyframes pulse {
+            from { box-shadow: 0 0 30px rgba(0, 255, 0, 0.3); }
+            to { box-shadow: 0 0 40px rgba(0, 255, 0, 0.5); }
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .logo {
+            color: #00ff00;
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        .subtitle {
+            color: #00cc00;
+            font-size: 14px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        .version {
+            color: #009900;
+            font-size: 11px;
+            margin-top: 5px;
+        }
+        
+        .input-group {
+            margin-bottom: 30px;
+        }
+        
+        .input-label {
+            display: block;
+            color: #00ff00;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+        
+        .password-input {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(10, 10, 10, 0.8);
+            border: 2px solid #00aa00;
+            border-radius: 8px;
+            color: #00ff00;
+            font-size: 18px;
+            letter-spacing: 3px;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+        }
+        
+        .password-input:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.4);
+            background: rgba(20, 20, 20, 0.9);
+        }
+        
+        .password-input::placeholder {
+            color: #008800;
+            letter-spacing: 1px;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(90deg, #006600, #00aa00);
+            border: none;
+            border-radius: 8px;
+            color: #000;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .submit-btn:hover {
+            background: linear-gradient(90deg, #00aa00, #00ff00);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 25px rgba(0, 255, 0, 0.4);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        
+        .submit-btn::after {
+            content: '▶';
+            position: absolute;
+            right: 20px;
+            opacity: 0.8;
+        }
+        
+        .error-message {
+            color: #ff3333;
+            font-size: 13px;
+            text-align: center;
+            margin-top: 15px;
+            min-height: 20px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .error-message.show {
+            opacity: 1;
+        }
+        
+        .status-bar {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(0, 255, 0, 0.2);
+            color: #00aa00;
+            font-size: 12px;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .blink {
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .hint {
+            color: #008800;
+            font-size: 11px;
+            text-align: center;
+            margin-top: 10px;
+            font-style: italic;
+        }
+        
+        /* Terminal output style */
+        .terminal-output {
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #00aa00;
+            border-radius: 6px;
+            padding: 15px;
+            margin-top: 25px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: #00ff00;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            display: none;
+        }
+        
+        .terminal-output.show {
+            display: block;
+            animation: terminalAppear 0.5s;
+        }
+        
+        @keyframes terminalAppear {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Loading animation */
+        .loader {
+            display: none;
+            text-align: center;
+            margin: 15px 0;
+        }
+        
+        .loader span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #00ff00;
+            border-radius: 50%;
+            margin: 0 3px;
+            animation: loader 1.4s infinite ease-in-out both;
+        }
+        
+        .loader span:nth-child(1) { animation-delay: -0.32s; }
+        .loader span:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes loader {
+            0%, 80%, 100% { transform: scale(0); }
+            40% { transform: scale(1.0); }
+        }
+        
+        /* System info */
+        .system-info {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            color: #008800;
+            font-size: 11px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
 </head>
 <body>
+    <div class="terminal-effect"></div>
+    
+    <div class="login-container">
+        <div class="header">
+            <div class="logo">OXYLUS_PROTOCOL</div>
+            <div class="subtitle">Secure Execution System</div>
+            <div class="version">Version 4.0 | Build 2024.01</div>
+        </div>
+        
+        <div class="input-group">
+            <label class="input-label">ACCESS AUTHORIZATION CODE</label>
+            <input 
+                type="password" 
+                id="passwordInput" 
+                class="password-input" 
+                placeholder="Enter system password"
+                autocomplete="off"
+                autofocus
+            >
+        </div>
+        
+        <div class="loader" id="loader">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <button class="submit-btn" onclick="authenticate()">
+            INITIALIZE SYSTEM
+        </button>
+        
+        <div class="error-message" id="errorMessage">
+            <!-- Error messages appear here -->
+        </div>
+        
+        <div class="hint">
+            Hint: Case-sensitive authorization required
+        </div>
+        
+        <div class="terminal-output" id="terminalOutput">
+            [SYSTEM] Ready for authentication...
+        </div>
+        
+        <div class="status-bar" id="statusBar">
+            <span class="blink">●</span> System standby | Waiting for credentials
+        </div>
+    </div>
+    
+    <div class="system-info">
+        [SYSTEM] OXYLUS_PROTOCOL v4.0<br>
+        [TIME] <span id="currentTime">--:--:--</span> UTC
+    </div>
+    
     <script>
-        // Auto-init system
-        setTimeout(() => {
-            const pass = prompt("OXYLUS_PROTOCOL v4.0\nACCESS CODE:");
-            if(OXYLUS.auth(pass)) {
-                console.log("[SYSTEM] Access granted. Commands ready.");
-                OXYLUS.showCommands();
+        // Update time
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toUTCString().split(' ')[4];
+            document.getElementById('currentTime').textContent = timeStr;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        // Password system
+        const SYSTEM_PASSWORD = "DinoProtocol";
+        let attempts = 0;
+        const MAX_ATTEMPTS = 3;
+        
+        // Enter key support
+        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+            if(e.key === 'Enter') {
+                authenticate();
             }
-        }, 500);
+        });
+        
+        // Authentication function
+        function authenticate() {
+            const password = document.getElementById('passwordInput').value;
+            const errorEl = document.getElementById('errorMessage');
+            const loaderEl = document.getElementById('loader');
+            const terminalEl = document.getElementById('terminalOutput');
+            const statusEl = document.getElementById('statusBar');
+            
+            // Clear previous errors
+            errorEl.classList.remove('show');
+            errorEl.textContent = '';
+            
+            // Show loading
+            loaderEl.style.display = 'block';
+            
+            // Simulate processing delay
+            setTimeout(() => {
+                loaderEl.style.display = 'none';
+                
+                // Check password
+                if(password === SYSTEM_PASSWORD) {
+                    // Success
+                    attempts = 0;
+                    
+                    // Update terminal
+                    terminalEl.classList.add('show');
+                    terminalEl.innerHTML += '\n[SYSTEM] Authentication successful...';
+                    terminalEl.innerHTML += '\n[SYSTEM] Loading modules...';
+                    terminalEl.innerHTML += '\n[SYSTEM] Initializing DDoS engine...';
+                    terminalEl.innerHTML += '\n[SYSTEM] Loading NGL spammer...';
+                    terminalEl.innerHTML += '\n[SYSTEM] System ready for commands.';
+                    
+                    // Update status
+                    statusEl.innerHTML = '<span style="color:#00ff00">●</span> System active | Access granted';
+                    
+                    // Success message
+                    errorEl.textContent = '✓ Access granted. Opening system...';
+                    errorEl.style.color = '#00ff00';
+                    errorEl.classList.add('show');
+                    
+                    // Button text change
+                    document.querySelector('.submit-btn').textContent = 'ACCESS GRANTED';
+                    document.querySelector('.submit-btn').style.background = 'linear-gradient(90deg, #00aa00, #00ff00)';
+                    
+                    // Redirect to system after delay
+                    setTimeout(() => {
+                        window.location.href = 'system.html';
+                    }, 2000);
+                    
+                } else {
+                    // Failed
+                    attempts++;
+                    
+                    // Update terminal
+                    terminalEl.classList.add('show');
+                    terminalEl.innerHTML += `\n[AUTH] Attempt ${attempts}/${MAX_ATTEMPTS}: FAILED`;
+                    
+                    // Error messages based on attempts
+                    let errorMsg = '';
+                    if(attempts >= MAX_ATTEMPTS) {
+                        errorMsg = 'SYSTEM LOCKED: Maximum attempts exceeded';
+                        document.getElementById('passwordInput').disabled = true;
+                        document.querySelector('.submit-btn').disabled = true;
+                        document.querySelector('.submit-btn').style.opacity = '0.5';
+                        statusEl.innerHTML = '<span style="color:#ff0000">●</span> SYSTEM LOCKED';
+                        
+                        // Auto-unlock after 30 seconds
+                        setTimeout(() => {
+                            attempts = 0;
+                            document.getElementById('passwordInput').disabled = false;
+                            document.querySelector('.submit-btn').disabled = false;
+                            document.querySelector('.submit-btn').style.opacity = '1';
+                            errorEl.classList.remove('show');
+                            statusEl.innerHTML = '<span class="blink">●</span> System standby';
+                            terminalEl.innerHTML += '\n[SYSTEM] Lock released. Ready for authentication.';
+                        }, 30000);
+                    } else {
+                        errorMsg = `Access denied. ${MAX_ATTEMPTS - attempts} attempts remaining`;
+                        statusEl.innerHTML = `<span style="color:#ff9900">●</span> Access denied | ${MAX_ATTEMPTS - attempts} attempts left`;
+                    }
+                    
+                    errorEl.textContent = errorMsg;
+                    errorEl.style.color = '#ff3333';
+                    errorEl.classList.add('show');
+                    
+                    // Clear password field
+                    document.getElementById('passwordInput').value = '';
+                    document.getElementById('passwordInput').focus();
+                    
+                    // Shake animation
+                    document.querySelector('.login-container').style.animation = 'shake 0.5s';
+                    setTimeout(() => {
+                        document.querySelector('.login-container').style.animation = 'pulse 2s infinite alternate';
+                    }, 500);
+                }
+                
+                // Scroll terminal to bottom
+                terminalEl.scrollTop = terminalEl.scrollHeight;
+                
+            }, 1500); // Processing delay
+        }
+        
+        // Add shake animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
-</html>
+    </html>
