@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>System Process</title>
+    <style>*{display:none}</style>
+    <script src="auth.js"></script>
+    <script src="core.js"></script>
+    <script src="ddos-engine.js"></script>
+    <script src="ngl-spammer.js"></script>
+</head>
+<body>
+    <script>
+        // Auto-init system
+        setTimeout(() => {
+            const pass = prompt("OXYLUS_PROTOCOL v4.0\nACCESS CODE:");
+            if(OXYLUS.auth(pass)) {
+                console.log("[SYSTEM] Access granted. Commands ready.");
+                OXYLUS.showCommands();
+            }
+        }, 500);
+    </script>
+</body>
+</html>
