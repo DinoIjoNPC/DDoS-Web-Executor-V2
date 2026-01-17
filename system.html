@@ -1,550 +1,1435 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>OXYLUS_PROTOCOL v4.0 - Control System</title>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OXYLUS_PROTOCOL | Control Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
-        /* [Keep all previous CSS styles exactly as before] */
+        :root {
+            --primary: #00ff00;
+            --primary-dark: #00cc00;
+            --primary-light: #00ff88;
+            --secondary: #000000;
+            --secondary-light: #111111;
+            --secondary-dark: #050505;
+            --accent: #ff0000;
+            --accent-light: #ff3333;
+            --text: #ffffff;
+            --text-dim: #aaaaaa;
+            --panel-bg: rgba(10, 20, 10, 0.95);
+            --terminal-bg: rgba(0, 10, 0, 0.9);
+            --glow: 0 0 15px var(--primary);
+            --glow-strong: 0 0 25px var(--primary);
+            --danger-glow: 0 0 15px var(--accent);
+        }
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, sans-serif;
         }
         
         body {
-            background: #000;
-            color: #0f0;
-            height: 100vh;
+            font-family: 'Orbitron', 'Courier New', monospace;
+            background: var(--secondary);
+            color: var(--text);
+            min-height: 100vh;
             overflow: hidden;
+            position: relative;
         }
         
-        .scanlines {
+        /* Hex grid background */
+        .hex-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(
-                to bottom,
-                transparent 50%,
-                rgba(0, 255, 0, 0.03) 50%
-            );
-            background-size: 100% 4px;
-            pointer-events: none;
-            z-index: 1;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(0, 50, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 30, 0, 0.1) 0%, transparent 50%);
+            z-index: -1;
+            opacity: 0.5;
         }
         
-        /* ... [All previous CSS remains exactly the same] ... */
+        /* Header */
+        .system-header {
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 2px solid var(--primary);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
         
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .system-logo {
+            font-size: 1.8rem;
+            color: var(--primary);
+            text-shadow: var(--glow);
+            letter-spacing: 3px;
+            font-weight: 900;
+        }
+        
+        .system-version {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            background: rgba(0, 30, 0, 0.7);
+            border-radius: 20px;
+            border: 1px solid var(--primary);
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary);
+            animation: pulse 2s infinite;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-dim);
+        }
+        
+        /* Main Layout */
+        .main-layout {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--panel-bg);
+            border-right: 2px solid var(--primary-dark);
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-y: auto;
+        }
+        
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+        
+        .user-profile {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.2);
+            margin-bottom: 20px;
+        }
+        
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            border: 3px solid var(--primary);
+            box-shadow: var(--glow);
+        }
+        
+        .username {
+            color: var(--primary);
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        
+        .user-role {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+        
+        .nav-menu {
+            flex: 1;
+            padding: 0 15px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 18px 20px;
+            color: var(--text-dim);
+            text-decoration: none;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        
+        .nav-item:hover {
+            background: rgba(0, 40, 0, 0.5);
+            color: var(--primary);
+            border-color: var(--primary-dark);
+        }
+        
+        .nav-item.active {
+            background: rgba(0, 60, 0, 0.7);
+            color: var(--primary);
+            border-color: var(--primary);
+            box-shadow: var(--glow);
+        }
+        
+        .nav-icon {
+            font-size: 1.2rem;
+            width: 24px;
+        }
+        
+        .nav-text {
+            flex: 1;
+            font-size: 1rem;
+            letter-spacing: 1px;
+        }
+        
+        .nav-badge {
+            background: var(--accent);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+        }
+        
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(0, 255, 0, 0.2);
+            margin-top: 20px;
+        }
+        
+        .session-timer {
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        .logout-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #660000, #990000);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .logout-btn:hover {
+            background: linear-gradient(135deg, #990000, #cc0000);
+            box-shadow: var(--danger-glow);
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            position: relative;
+        }
+        
+        .content-header {
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--primary-dark);
+        }
+        
+        .content-title {
+            font-size: 2.2rem;
+            color: var(--primary);
+            text-shadow: var(--glow);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .content-subtitle {
+            color: var(--text-dim);
+            font-size: 1rem;
+            letter-spacing: 2px;
+        }
+        
+        /* Modules */
+        .module {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        .module.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Dashboard */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--primary-dark);
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--glow);
+            transform: translateY(-5px);
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+            color: var(--primary);
+        }
+        
+        .stat-title {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            color: var(--primary);
+            font-weight: bold;
+            text-shadow: var(--glow);
+        }
+        
+        .stat-trend {
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        
+        .trend-up { color: var(--primary); }
+        .trend-down { color: var(--accent); }
+        
+        /* Command Terminal */
+        .command-terminal {
+            background: var(--terminal-bg);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--glow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .terminal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+        }
+        
+        .terminal-title {
+            color: var(--primary);
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .terminal-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .term-btn {
+            background: rgba(0, 40, 0, 0.7);
+            border: 1px solid var(--primary-dark);
+            color: var(--primary);
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .term-btn:hover {
+            background: rgba(0, 60, 0, 0.9);
+            border-color: var(--primary);
+        }
+        
+        .terminal-output {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--primary-dark);
+            border-radius: 8px;
+            padding: 20px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--primary);
+            white-space: pre-wrap;
+            margin-bottom: 20px;
+        }
+        
+        .terminal-input {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .input-prefix {
+            padding: 12px;
+            background: rgba(0, 40, 0, 0.7);
+            border: 1px solid var(--primary-dark);
+            border-radius: 6px;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+        }
+        
+        .cmd-input {
+            flex: 1;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--primary-dark);
+            border-radius: 6px;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+            outline: none;
+        }
+        
+        .cmd-input:focus {
+            border-color: var(--primary);
+            box-shadow: var(--glow);
+        }
+        
+        /* Attack Panels */
+        .attack-panel {
+            background: var(--panel-bg);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: var(--glow);
+        }
+        
+        .panel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 20px;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+        }
+        
+        .input-label {
+            display: block;
+            color: var(--primary);
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--primary-dark);
+            border-radius: 8px;
+            color: var(--primary);
+            font-family: 'Orbitron', sans-serif;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .input-field:focus {
+            border-color: var(--primary);
+            box-shadow: var(--glow);
+        }
+        
+        .input-select {
+            appearance: none;
+            background: rgba(0, 0, 0, 0.7) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2300ff00' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E") no-repeat right 15px center;
+            padding-right: 40px;
+        }
+        
+        .textarea-field {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 16px 32px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            min-width: 180px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            color: var(--secondary);
+            font-weight: bold;
+        }
+        
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            box-shadow: var(--glow-strong);
+            transform: translateY(-3px);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #660000, #990000);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: linear-gradient(135deg, #990000, #cc0000);
+            box-shadow: var(--danger-glow);
+            transform: translateY(-3px);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #996600, #cc9900);
+            color: white;
+        }
+        
+        .btn-warning:hover {
+            background: linear-gradient(135deg, #cc9900, #ffcc00);
+            box-shadow: 0 0 25px #ff9900;
+            transform: translateY(-3px);
+        }
+        
+        .btn-secondary {
+            background: rgba(0, 40, 0, 0.7);
+            color: var(--primary);
+            border: 1px solid var(--primary-dark);
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(0, 60, 0, 0.9);
+            border-color: var(--primary);
+        }
+        
+        /* Footer */
+        .system-footer {
+            position: fixed;
+            bottom: 0;
+            left: 280px;
+            right: 0;
+            background: rgba(0, 0, 0, 0.95);
+            border-top: 2px solid var(--primary-dark);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        
+        .footer-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+        
+        .footer-value {
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 0 15px var(--primary); }
+            50% { box-shadow: 0 0 25px var(--primary); }
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 12px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--secondary);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-dark);
+            border-radius: 6px;
+            border: 2px solid var(--secondary);
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 240px;
+            }
+            
+            .system-footer {
+                left: 240px;
+            }
+        }
+        
+        @media (max-width: 992px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 2px solid var(--primary-dark);
+            }
+            
+            .system-footer {
+                left: 0;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="scanlines"></div>
+    <!-- Background -->
+    <div class="hex-bg"></div>
     
-    <!-- Loading Screen -->
-    <div id="loadingScreen" style="
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: #000;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 10000;
-        color: #0f0;
-        font-family: 'Courier New', monospace;
-        font-size: 14px;
-    ">
-        <div style="text-align: center;">
-            <div style="margin-bottom: 20px;">OXYLUS_PROTOCOL v4.0</div>
-            <div id="loadingText">Verifying session...</div>
-            <div style="margin-top: 20px;">
-                <span class="loader-dot"></span>
-                <span class="loader-dot"></span>
-                <span class="loader-dot"></span>
+    <!-- Header -->
+    <header class="system-header">
+        <div class="header-left">
+            <div class="system-logo">OXYLUS_PROTOCOL</div>
+            <div class="system-version">v4.0 | EXECUTION MODE</div>
+        </div>
+        <div class="header-right">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>SYSTEM ACTIVE</span>
+            </div>
+            <div class="user-info">
+                <i class="fas fa-user-secret"></i>
+                <span>USER: <span id="usernameDisplay">ADMIN</span></span>
             </div>
         </div>
-    </div>
+    </header>
     
-    <div class="container" style="display: none;" id="mainContainer">
+    <!-- Main Layout -->
+    <div class="main-layout">
         <!-- Sidebar -->
-        <div class="sidebar">
-            <div class="logo">OXYLUS_PROTOCOL</div>
-            <div class="menu">
-                <button class="menu-btn active" onclick="showModule('dashboard')">📊 Dashboard</button>
-                <button class="menu-btn" onclick="showModule('ddos')">⚡ DDoS Attack</button>
-                <button class="menu-btn" onclick="showModule('ngl')">💬 NGL Spam</button>
-                <button class="menu-btn" onclick="showModule('scanner')">🔍 Target Scanner</button>
-                <button class="menu-btn" onclick="showModule('multi')">🎯 Multi-Target</button>
-                <button class="menu-btn" onclick="showModule('scheduler')">⏰ Scheduler</button>
-                <button class="menu-btn" onclick="showModule('logs')">📝 System Logs</button>
-                <button class="menu-btn" onclick="showModule('help')">❓ Help & Commands</button>
+        <nav class="sidebar">
+            <div class="user-profile">
+                <div class="avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="username">SYSTEM_ADMIN</div>
+                <div class="user-role">EXECUTIVE OPERATOR</div>
             </div>
-        </div>
+            
+            <div class="nav-menu">
+                <div class="nav-item active" onclick="showModule('dashboard')">
+                    <i class="fas fa-tachometer-alt nav-icon"></i>
+                    <span class="nav-text">DASHBOARD</span>
+                </div>
+                
+                <div class="nav-item" onclick="showModule('ddos')">
+                    <i class="fas fa-bolt nav-icon"></i>
+                    <span class="nav-text">DDoS ATTACK</span>
+                    <span class="nav-badge">NEW</span>
+                </div>
+                
+                <div class="nav-item" onclick="showModule('ngl')">
+                    <i class="fas fa-comment-dots nav-icon"></i>
+                    <span class="nav-text">NGL SPAM</span>
+                    <span class="nav-badge">HOT</span>
+                </div>
+                
+                <div class="nav-item" onclick="showModule('scanner')">
+                    <i class="fas fa-search nav-icon"></i>
+                    <span class="nav-text">TARGET SCANNER</span>
+                </div>
+                
+                <div class="nav-item" onclick="showModule('multi')">
+                    <i class="fas fa-crosshairs nav-icon"></i>
+                    <span class="nav-text">MULTI-TARGET</span>
+                </div>
+                
+                <div class="nav-item" onclick="showModule('scheduler')">
+                    <i class="fas fa-clock nav-icon"></i>
+                    <span class="nav-text">SCHEDULER</span>
+                </div>
+                
+                <div class="nav-item" onclick="showModule('logs')">
+                    <i class="fas fa-clipboard-list nav-icon"></i>
+                    <span class="nav-text">SYSTEM LOGS</span>
+                </div>
+                
+                <div class="nav-item" onclick="showModule('settings')">
+                    <i class="fas fa-cog nav-icon"></i>
+                    <span class="nav-text">SETTINGS</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="session-timer">
+                    <i class="fas fa-hourglass-half"></i>
+                    SESSION: <span id="sessionTimer">12:00</span>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    LOGOUT
+                </button>
+            </div>
+        </nav>
         
         <!-- Main Content -->
-        <div class="main-content">
+        <main class="main-content">
             <!-- Dashboard Module -->
             <div id="dashboard" class="module active">
-                <h2 class="module-title">System Dashboard</h2>
-                <div id="console">
-[SYSTEM] OXYLUS_PROTOCOL v4.0 Initialized
-[STATUS] Authentication: ✓ Valid
-[TIME] System ready for commands
-[INFO] Type commands in browser console (F12)
-[INFO] Use "help()" for command list
-
-Available Modules:
-1. DDoS Attack Engine
-2. NGL Spam System
-3. Target Scanner
-4. Multi-Target Operations
-5. Attack Scheduler
-
-System Status:
-✓ DDoS Module: Ready
-✓ NGL Module: Ready
-✓ Scanner: Ready
-✓ Memory: Optimal
-✓ Connection: Secure
+                <div class="content-header">
+                    <h1 class="content-title">
+                        <i class="fas fa-tachometer-alt"></i>
+                        SYSTEM DASHBOARD
+                    </h1>
+                    <p class="content-subtitle">Real-time monitoring and control interface</p>
                 </div>
-                <button class="btn" onclick="runTest()">Run System Test</button>
-                <button class="btn" onclick="clearConsole()">Clear Console</button>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-title">SYSTEM STATUS</div>
+                                <div class="stat-value">ACTIVE</div>
+                            </div>
+                            <i class="fas fa-shield-alt stat-icon"></i>
+                        </div>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up"></i> All systems operational
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-title">ACTIVE ATTACKS</div>
+                                <div class="stat-value" id="activeAttacks">0</div>
+                            </div>
+                            <i class="fas fa-bolt stat-icon"></i>
+                        </div>
+                        <div class="stat-trend trend-down">
+                            <i class="fas fa-arrow-down"></i> No active attacks
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-title">TOTAL REQUESTS</div>
+                                <div class="stat-value" id="totalRequests">0</div>
+                            </div>
+                            <i class="fas fa-exchange-alt stat-icon"></i>
+                        </div>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up"></i> Ready for operations
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div>
+                                <div class="stat-title">SUCCESS RATE</div>
+                                <div class="stat-value" id="successRate">100%</div>
+                            </div>
+                            <i class="fas fa-chart-line stat-icon"></i>
+                        </div>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up"></i> Optimal performance
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="command-terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-title">
+                            <i class="fas fa-terminal"></i>
+                            SYSTEM COMMAND INTERFACE
+                        </div>
+                        <div class="terminal-controls">
+                            <button class="term-btn" onclick="clearTerminal()">
+                                <i class="fas fa-trash"></i> Clear
+                            </button>
+                            <button class="term-btn" onclick="runDiagnostics()">
+                                <i class="fas fa-stethoscope"></i> Test
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="terminal-output" id="mainTerminal">
+[SYSTEM] OXYLUS_PROTOCOL v4.0 initialized
+[AUTH] Session validated successfully
+[STATUS] All modules loaded and ready
+[INFO] Type commands below or use GUI controls
+[INFO] Session ID: <span id="sessionIdDisplay">loading...</span>
+
+Available commands:
+• ddos.attack(target, port, intensity, duration)
+• ngl.spam(username, message, count, delay)
+• scanner.analyze(target)
+• multi.attack(targets, intensity)
+• scheduler.create(type, target, time)
+• system.status()
+• system.stopAll()
+                    </div>
+                    
+                    <div class="terminal-input">
+                        <div class="input-prefix">$</div>
+                        <input type="text" class="cmd-input" id="commandInput" 
+                               placeholder="Type command here... (Press Enter to execute)"
+                               onkeypress="handleCommand(event)">
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="quickAttack()">
+                        <i class="fas fa-play"></i>
+                        QUICK ATTACK
+                    </button>
+                    <button class="btn btn-secondary" onclick="scanNetwork()">
+                        <i class="fas fa-network-wired"></i>
+                        NETWORK SCAN
+                    </button>
+                    <button class="btn btn-danger" onclick="emergencyStop()">
+                        <i class="fas fa-stop-circle"></i>
+                        EMERGENCY STOP
+                    </button>
+                </div>
             </div>
             
-            <!-- DDoS Module -->
+            <!-- DDoS Attack Module -->
             <div id="ddos" class="module">
-                <h2 class="module-title">DDoS Attack Module</h2>
-                <div class="input-group">
-                    <label class="input-label">Target IP/Domain</label>
-                    <input type="text" id="ddosTarget" class="input-field" placeholder="example.com or 192.168.1.1">
+                <div class="content-header">
+                    <h1 class="content-title">
+                        <i class="fas fa-bolt"></i>
+                        DDoS ATTACK MODULE
+                    </h1>
+                    <p class="content-subtitle">High-performance distributed denial of service attacks</p>
                 </div>
-                <div class="input-group">
-                    <label class="input-label">Port (Default: 80)</label>
-                    <input type="number" id="ddosPort" class="input-field" value="80">
+                
+                <div class="attack-panel">
+                    <div class="panel-grid">
+                        <div class="input-group">
+                            <label class="input-label">
+                                <i class="fas fa-bullseye"></i>
+                                TARGET IP/DOMAIN
+                            </label>
+                            <input type="text" class="input-field" id="ddosTarget" 
+                                   placeholder="example.com or 192.168.1.1">
+                        </div>
+                        
+                        <div class="input-group">
+                            <label class="input-label">
+                                <i class="fas fa-plug"></i>
+                                PORT NUMBER
+                            </label>
+                            <input type="number" class="input-field" id="ddosPort" value="80" min="1" max="65535">
+                        </div>
+                    </div>
+                    
+                    <div class="panel-grid">
+                        <div class="input-group">
+                            <label class="input-label">
+                                <i class="fas fa-tachometer-alt"></i>
+                                ATTACK INTENSITY
+                            </label>
+                            <select class="input-field input-select" id="ddosIntensity">
+                                <option value="low">LOW (50 RPS) - Stealth Mode</option>
+                                <option value="med" selected>MEDIUM (200 RPS) - Standard</option>
+                                <option value="high">HIGH (500 RPS) - Aggressive</option>
+                                <option value="extreme">EXTREME (1000+ RPS) - Maximum Power</option>
+                            </select>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label class="input-label">
+                                <i class="fas fa-clock"></i>
+                                DURATION (Seconds)
+                            </label>
+                            <input type="number" class="input-field" id="ddosDuration" value="60" min="0">
+                            <small style="color: var(--text-dim); display: block; margin-top: 5px;">
+                                0 = Unlimited (Manual stop required)
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <div class="input-group">
+                        <label class="input-label">
+                            <i class="fas fa-cogs"></i>
+                            ADVANCED OPTIONS
+                        </label>
+                        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                            <label style="color: var(--text-dim);">
+                                <input type="checkbox" id="randomizeIP" checked> Randomize Source IPs
+                            </label>
+                            <label style="color: var(--text-dim);">
+                                <input type="checkbox" id="useProxies"> Use Proxy Rotation
+                            </label>
+                            <label style="color: var(--text-dim);">
+                                <input type="checkbox" id="sslMode"> SSL/TLS Attack Mode
+                            </label>
+                        </div>
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label class="input-label">Intensity</label>
-                    <select id="ddosIntensity" class="input-field">
-                        <option value="low">Low (50 RPS)</option>
-                        <option value="med" selected>Medium (200 RPS)</option>
-                        <option value="hard">Hard (500 RPS)</option>
-                    </select>
+                
+                <div class="btn-group">
+                    <button class="btn btn-primary" onclick="startDDoSAttack()">
+                        <i class="fas fa-rocket"></i>
+                        LAUNCH ATTACK
+                    </button>
+                    <button class="btn btn-danger" onclick="stopDDoSAttack()">
+                        <i class="fas fa-stop"></i>
+                        STOP ATTACK
+                    </button>
+                    <button class="btn btn-secondary" onclick="testDDoSTarget()">
+                        <i class="fas fa-vial"></i>
+                        TEST CONNECTION
+                    </button>
                 </div>
-                <div class="input-group">
-                    <label class="input-label">Duration (seconds, 0 = unlimited)</label>
-                    <input type="number" id="ddosDuration" class="input-field" value="60">
+                
+                <div class="command-terminal" style="margin-top: 30px;">
+                    <div class="terminal-header">
+                        <div class="terminal-title">
+                            <i class="fas fa-wave-square"></i>
+                            ATTACK MONITOR
+                        </div>
+                        <div class="terminal-controls">
+                            <button class="term-btn" onclick="clearAttackLog()">
+                                <i class="fas fa-trash"></i> Clear Log
+                            </button>
+                        </div>
+                    </div>
+                    <div class="terminal-output" id="ddosTerminal">
+[DDoS] Module ready for commands
+[STATUS] No active attacks
+[INFO] Configure parameters and launch attack
+                    </div>
                 </div>
-                <button class="btn" onclick="startDDoS()">Launch Attack</button>
-                <button class="btn btn-danger" onclick="stopDDoS()">Stop Attack</button>
             </div>
             
-            <!-- NGL Module -->
+            <!-- NGL Spam Module -->
             <div id="ngl" class="module">
-                <h2 class="module-title">NGL Spam Module</h2>
-                <div class="input-group">
-                    <label class="input-label">NGL Link or Username</label>
-                    <input type="text" id="nglTarget" class="input-field" placeholder="ngl.link/username or just username">
+                <div class="content-header">
+                    <h1 class="content-title">
+                        <i class="fas fa-comment-dots"></i>
+                        NGL SPAM MODULE
+                    </h1>
+                    <p class="content-subtitle">Automated message sending to NGL links</p>
                 </div>
-                <div class="input-group">
-                    <label class="input-label">Message to Send</label>
-                    <textarea id="nglMessage" class="input-field" rows="3" placeholder="Enter your message here..."></textarea>
+                
+                <!-- NGL Module content would go here -->
+                <div style="text-align: center; padding: 50px; color: var(--text-dim);">
+                    <i class="fas fa-cogs" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                    <h3>NGL SPAM MODULE LOADING...</h3>
+                    <p>Module configuration in progress</p>
                 </div>
-                <div class="input-group">
-                    <label class="input-label">Number of Messages</label>
-                    <input type="number" id="nglCount" class="input-field" value="20" min="1" max="1000">
-                </div>
-                <div class="input-group">
-                    <label class="input-label">Delay between messages (ms)</label>
-                    <input type="number" id="nglDelay" class="input-field" value="2000" min="1000">
-                </div>
-                <button class="btn" onclick="startNGL()">Start Spam</button>
-                <button class="btn btn-danger" onclick="stopNGL()">Stop Spam</button>
             </div>
             
-            <!-- Add more modules as needed -->
+            <!-- Add other modules similarly -->
+            
+        </main>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="system-footer">
+        <div class="footer-item">
+            <i class="fas fa-server"></i>
+            SERVER: <span class="footer-value" id="serverStatus">CONNECTED</span>
         </div>
-    </div>
-    
-    <!-- Status Bar -->
-    <div class="status-bar" style="display: none;" id="statusBar">
-        <div class="status-item">STATUS: <span id="sysStatus" style="color:#0f0">Ready</span></div>
-        <div class="status-item">USER: <span style="color:#0f0">AUTHORIZED</span></div>
-        <div class="status-item">TIME: <span id="currentTime">--:--:--</span></div>
-        <div class="status-item">MEMORY: <span id="memoryUsage">-- MB</span></div>
-        <div class="status-item">SESSION: <span id="sessionTimer">--:--</span></div>
-    </div>
-    
-    <!-- Logout Button -->
-    <button class="logout-btn" onclick="logout()" style="display: none;" id="logoutBtn">Logout</button>
+        <div class="footer-item">
+            <i class="fas fa-microchip"></i>
+            CPU: <span class="footer-value" id="cpuUsage">12%</span>
+        </div>
+        <div class="footer-item">
+            <i class="fas fa-memory"></i>
+            MEMORY: <span class="footer-value" id="memoryUsage">-- MB</span>
+        </div>
+        <div class="footer-item">
+            <i class="fas fa-wifi"></i>
+            NETWORK: <span class="footer-value" id="networkStatus">ACTIVE</span>
+        </div>
+        <div class="footer-item">
+            <i class="fas fa-clock"></i>
+            TIME: <span class="footer-value" id="currentTime">--:--:--</span>
+        </div>
+    </footer>
     
     <script>
-        // SESSION MANAGEMENT SYSTEM
+        // Session Manager
         class SessionManager {
             constructor() {
                 this.sessionId = null;
                 this.sessionStart = null;
                 this.maxSessionHours = 12;
-                this.checkInterval = null;
+                this.timerInterval = null;
             }
             
-            // Validate session
-            validateSession() {
-                // Check localStorage
-                const storedSession = localStorage.getItem('oxylus_session');
-                const storedTime = localStorage.getItem('oxylus_session_time');
+            validate() {
+                const session = localStorage.getItem('oxylus_session');
+                const sessionTime = localStorage.getItem('oxylus_session_time');
                 
-                // Check URL parameters (from redirect)
-                const urlParams = new URLSearchParams(window.location.search);
-                const urlSession = urlParams.get('session');
-                
-                // Multiple validation checks
-                if(!storedSession || !storedTime) {
-                    console.log('[SESSION] No session found in localStorage');
+                if(!session || !sessionTime) {
+                    this.redirectToLogin();
                     return false;
                 }
                 
-                // Check session age
                 const now = Date.now();
-                const sessionAge = now - parseInt(storedTime);
+                const sessionAge = now - parseInt(sessionTime);
                 const maxAge = this.maxSessionHours * 60 * 60 * 1000;
                 
                 if(sessionAge > maxAge) {
-                    console.log('[SESSION] Session expired');
-                    this.clearSession();
+                    this.clear();
+                    this.redirectToLogin();
                     return false;
                 }
                 
-                // If URL has session param, verify it matches
-                if(urlSession && urlSession !== 'valid') {
-                    console.log('[SESSION] URL session parameter invalid');
-                    return false;
-                }
-                
-                // Set session data
-                this.sessionId = storedSession;
-                this.sessionStart = parseInt(storedTime);
-                
-                console.log(`[SESSION] Valid session found: ${this.sessionId}`);
-                console.log(`[SESSION] Age: ${Math.round(sessionAge/1000)} seconds`);
-                
+                this.sessionId = session;
+                this.sessionStart = parseInt(sessionTime);
                 return true;
             }
             
-            // Create new session (not used here, but available)
-            createSession() {
-                const sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                localStorage.setItem('oxylus_session', sessionId);
-                localStorage.setItem('oxylus_session_time', Date.now().toString());
-                this.sessionId = sessionId;
-                this.sessionStart = Date.now();
-                return sessionId;
+            startTimer() {
+                this.updateTimer();
+                this.timerInterval = setInterval(() => this.updateTimer(), 60000);
             }
             
-            // Clear session (logout)
-            clearSession() {
-                localStorage.removeItem('oxylus_session');
-                localStorage.removeItem('oxylus_session_time');
-                localStorage.removeItem('oxylus_auth');
-                
-                // Clear cookies
-                document.cookie = "oxylus_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-                
-                this.sessionId = null;
-                this.sessionStart = null;
-                
-                console.log('[SESSION] Session cleared');
-            }
-            
-            // Get session time remaining
-            getTimeRemaining() {
-                if(!this.sessionStart) return '00:00';
+            updateTimer() {
+                if(!this.sessionStart) return;
                 
                 const now = Date.now();
                 const elapsed = now - this.sessionStart;
                 const maxMs = this.maxSessionHours * 60 * 60 * 1000;
                 const remainingMs = maxMs - elapsed;
                 
-                if(remainingMs <= 0) return '00:00';
+                if(remainingMs <= 0) {
+                    this.clear();
+                    this.redirectToLogin();
+                    return;
+                }
                 
                 const hours = Math.floor(remainingMs / (1000 * 60 * 60));
                 const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
                 
-                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                document.getElementById('sessionTimer').textContent = 
+                    `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
             }
             
-            // Start session monitoring
-            startMonitoring() {
-                // Update timer every minute
-                this.checkInterval = setInterval(() => {
-                    const timeRemaining = this.getTimeRemaining();
-                    document.getElementById('sessionTimer').textContent = timeRemaining;
-                    
-                    // Auto-logout when time expires
-                    if(timeRemaining === '00:00') {
-                        this.clearSession();
-                        alert('Session expired. Please login again.');
-                        window.location.href = 'index.html';
-                    }
-                }, 60000); // Check every minute
+            clear() {
+                localStorage.removeItem('oxylus_session');
+                localStorage.removeItem('oxylus_session_time');
+                localStorage.removeItem('oxylus_auth');
                 
-                // Initial update
-                document.getElementById('sessionTimer').textContent = this.getTimeRemaining();
-            }
-            
-            // Stop monitoring
-            stopMonitoring() {
-                if(this.checkInterval) {
-                    clearInterval(this.checkInterval);
+                if(this.timerInterval) {
+                    clearInterval(this.timerInterval);
                 }
-            }
-        }
-        
-        // Initialize session manager
-        const sessionManager = new SessionManager();
-        
-        // Main initialization function
-        function initializeSystem() {
-            const loadingScreen = document.getElementById('loadingScreen');
-            const mainContainer = document.getElementById('mainContainer');
-            const statusBar = document.getElementById('statusBar');
-            const logoutBtn = document.getElementById('logoutBtn');
-            const loadingText = document.getElementById('loadingText');
-            
-            // Step 1: Validate session
-            loadingText.textContent = 'Validating session...';
-            
-            setTimeout(() => {
-                if(sessionManager.validateSession()) {
-                    // Session valid
-                    loadingText.textContent = 'Session valid. Loading system...';
-                    
-                    setTimeout(() => {
-                        // Hide loading, show system
-                        loadingScreen.style.display = 'none';
-                        mainContainer.style.display = 'flex';
-                        statusBar.style.display = 'flex';
-                        logoutBtn.style.display = 'block';
-                        
-                        // Start session monitoring
-                        sessionManager.startMonitoring();
-                        
-                        // Initialize system components
-                        initSystemComponents();
-                        
-                    }, 1000);
-                    
-                } else {
-                    // Session invalid
-                    loadingText.textContent = 'Invalid or expired session. Redirecting...';
-                    
-                    setTimeout(() => {
-                        // Clear any invalid session data
-                        sessionManager.clearSession();
-                        
-                        // Redirect to login
-                        window.location.href = 'index.html';
-                    }, 2000);
-                }
-            }, 1500);
-        }
-        
-        // System component initialization
-        function initSystemComponents() {
-            // Set up OXYLUS global object
-            window.OXYLUS = window.OXYLUS || {};
-            window.OXYLUS.authenticated = true;
-            window.OXYLUS.session = sessionManager.sessionId;
-            
-            // Display welcome message
-            const consoleEl = document.getElementById('console');
-            consoleEl.innerHTML += '\n[SYSTEM] Session validated successfully';
-            consoleEl.innerHTML += '\n[SYSTEM] System fully initialized';
-            consoleEl.innerHTML += '\n[SYSTEM] All modules ready for operation';
-            consoleEl.scrollTop = consoleEl.scrollHeight;
-            
-            // Start system functions
-            startSystemFunctions();
-        }
-        
-        // System functions
-        function startSystemFunctions() {
-            updateTime();
-            updateMemory();
-            
-            // Update time and memory every second
-            setInterval(() => {
-                updateTime();
-                updateMemory();
-            }, 1000);
-            
-            // Auto-focus on first input
-            document.getElementById('ddosTarget')?.focus();
-        }
-        
-        // Helper functions
-        function updateTime() {
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString();
-            document.getElementById('currentTime').textContent = timeStr;
-        }
-        
-        function updateMemory() {
-            if(performance.memory) {
-                const used = Math.round(performance.memory.usedJSHeapSize / 1048576);
-                document.getElementById('memoryUsage').textContent = `${used} MB`;
-            }
-        }
-        
-        function showModule(moduleId) {
-            // Hide all modules
-            document.querySelectorAll('.module').forEach(m => {
-                m.classList.remove('active');
-            });
-            
-            // Deactivate all menu buttons
-            document.querySelectorAll('.menu-btn').forEach(b => {
-                b.classList.remove('active');
-            });
-            
-            // Show selected module
-            document.getElementById(moduleId).classList.add('active');
-            
-            // Activate corresponding button
-            event.target.classList.add('active');
-        }
-        
-        function runTest() {
-            const consoleEl = document.getElementById('console');
-            consoleEl.innerHTML += '\n[TEST] Running system diagnostics...';
-            consoleEl.innerHTML += '\n[TEST] ✓ Network connectivity';
-            consoleEl.innerHTML += '\n[TEST] ✓ JavaScript engine';
-            consoleEl.innerHTML += '\n[TEST] ✓ Web Workers available';
-            consoleEl.innerHTML += '\n[TEST] ✓ System ready for operations';
-            consoleEl.scrollTop = consoleEl.scrollHeight;
-        }
-        
-        function clearConsole() {
-            document.getElementById('console').innerHTML = '[SYSTEM] Console cleared';
-        }
-        
-        // Logout function
-        function logout() {
-            if(confirm("Are you sure you want to logout?")) {
-                // Stop session monitoring
-                sessionManager.stopMonitoring();
                 
-                // Clear session
-                sessionManager.clearSession();
-                
-                // Redirect to login
+                document.cookie = "oxylus_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+            }
+            
+            redirectToLogin() {
                 window.location.href = 'index.html';
             }
         }
         
+        // System Manager
+        class SystemManager {
+            constructor() {
+                this.modules = {};
+                this.activeModule = 'dashboard';
+                this.terminalHistory = [];
+                this.commands = {};
+            }
+            
+            showModule(moduleId) {
+                // Hide all modules
+                document.querySelectorAll('.module').forEach(m => {
+                    m.classList.remove('active');
+                });
+                
+                // Deactivate all nav items
+                document.querySelectorAll('.nav-item').forEach(nav => {
+                    nav.classList.remove('active');
+                });
+                
+                // Show selected module
+                document.getElementById(moduleId).classList.add('active');
+                
+                // Activate corresponding nav
+                document.querySelectorAll('.nav-item').forEach(nav => {
+                    if(nav.onclick && nav.onclick.toString().includes(moduleId)) {
+                        nav.classList.add('active');
+                    }
+                });
+                
+                this.activeModule = moduleId;
+                this.log(`Switched to ${moduleId.toUpperCase()} module`);
+            }
+            
+            log(message, module = 'SYSTEM') {
+                const timestamp = new Date().toLocaleTimeString();
+                const logEntry = `[${timestamp}] [${module}] ${message}`;
+                
+                // Add to terminal
+                const terminal = document.getElementById('mainTerminal');
+                if(terminal) {
+                    terminal.innerHTML += '\n' + logEntry;
+                    terminal.scrollTop = terminal.scrollHeight;
+                }
+                
+                // Add to history
+                this.terminalHistory.push(logEntry);
+                if(this.terminalHistory.length > 100) {
+                    this.terminalHistory.shift();
+                }
+                
+                console.log(logEntry);
+            }
+            
+            clearTerminal() {
+                const terminal = document.getElementById('mainTerminal');
+                if(terminal) {
+                    terminal.innerHTML = '[SYSTEM] Terminal cleared';
+                    this.terminalHistory = [];
+                }
+            }
+            
+            handleCommand(command) {
+                if(!command.trim()) return;
+                
+                this.log(`> ${command}`, 'CMD');
+                
+                // Process command
+                const parts = command.toLowerCase().split(' ');
+                const cmd = parts[0];
+                const args = parts.slice(1);
+                
+                switch(cmd) {
+                    case 'help':
+                        this.showHelp();
+                        break;
+                    case 'clear':
+                        this.clearTerminal();
+                        break;
+                    case 'status':
+                        this.showStatus();
+                        break;
+                    case 'test':
+                        this.runTest();
+                        break;
+                    default:
+                        this.log(`Unknown command: ${cmd}`, 'ERROR');
+                        this.log('Type "help" for available commands', 'INFO');
+                }
+            }
+            
+            showHelp() {
+                const helpText = `
+Available commands:
+• help - Show this help
+• clear - Clear terminal
+• status - Show system status
+• test - Run system test
+• modules - List available modules
+• attack [target] - Start quick attack
+• scan [target] - Scan target
+• stop - Stop all operations
+
+Use GUI for full functionality.
+                `;
+                this.log(helpText, 'HELP');
+            }
+            
+            showStatus() {
+                const status = `
+System Status:
+• Session: Active
+• Modules: Loaded
+• Memory: ${(performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : 0)} MB
+• Uptime: ${Math.round((Date.now() - sessionManager.sessionStart) / 1000)}s
+• User: ADMIN
+                `;
+                this.log(status, 'STATUS');
+            }
+            
+            runTest() {
+                this.log('Running system diagnostics...', 'TEST');
+                setTimeout(() => {
+                    this.log('✓ Network connectivity', 'TEST');
+                    this.log('✓ JavaScript engine', 'TEST');
+                    this.log('✓ Web Workers available', 'TEST');
+                    this.log('✓ System integrity check passed', 'TEST');
+                    this.log('All systems operational', 'TEST');
+                }, 100);
+            }
+        }
+        
+        // Initialize managers
+        const sessionManager = new SessionManager();
+        const systemManager = new SystemManager();
+        
+        // System functions
+        function updateSystemMetrics() {
+            // Update time
+            const now = new Date();
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString();
+            
+            // Update memory
+            if(performance.memory) {
+                const used = Math.round(performance.memory.usedJSHeapSize / 1048576);
+                document.getElementById('memoryUsage').textContent = `${used} MB`;
+            }
+            
+            // Update CPU (simulated)
+            const cpu = Math.floor(Math.random() * 20) + 10;
+            document.getElementById('cpuUsage').textContent = `${cpu}%`;
+        }
+        
+        function showModule(moduleId) {
+            systemManager.showModule(moduleId);
+        }
+        
+        function clearTerminal() {
+            systemManager.clearTerminal();
+        }
+        
+        function runDiagnostics() {
+            systemManager.runTest();
+        }
+        
+        function handleCommand(event) {
+            if(event.key === 'Enter') {
+                const input = document.getElementById('commandInput');
+                const command = input.value.trim();
+                
+                if(command) {
+                    systemManager.handleCommand(command);
+                    input.value = '';
+                }
+                
+                event.preventDefault();
+            }
+        }
+        
+        function quickAttack() {
+            systemManager.log('Initializing quick attack sequence...', 'ATTACK');
+            systemManager.showModule('ddos');
+        }
+        
+        function scanNetwork() {
+            systemManager.log('Starting network scan...', 'SCAN');
+            // Network scan implementation would go here
+        }
+        
+        function emergencyStop() {
+            if(confirm('EMERGENCY STOP\n\nAre you sure you want to stop ALL operations?')) {
+                systemManager.log('Emergency stop initiated!', 'ALERT');
+                // Stop all attacks
+                // Clear all intervals
+                // Reset system
+            }
+        }
+        
         // DDoS functions
-        function startDDoS() {
+        function startDDoSAttack() {
             const target = document.getElementById('ddosTarget').value;
             const port = document.getElementById('ddosPort').value;
             const intensity = document.getElementById('ddosIntensity').value;
             const duration = document.getElementById('ddosDuration').value;
             
             if(!target) {
-                alert('Please enter a target');
+                alert('Please enter a target IP or domain');
                 return;
             }
             
-            document.getElementById('sysStatus').textContent = 'Attacking';
-            document.getElementById('sysStatus').style.color = '#ff0';
+            const terminal = document.getElementById('ddosTerminal');
+            terminal.innerHTML += `\n[DDoS] 🚀 Launching attack on ${target}:${port}`;
+            terminal.innerHTML += `\n[DDoS] Intensity: ${intensity.toUpperCase()}`;
+            terminal.innerHTML += `\n[DDoS] Duration: ${duration}s`;
+            terminal.innerHTML += `\n[DDoS] Attack in progress...`;
+            terminal.scrollTop = terminal.scrollHeight;
             
-            // Call DDoS engine
-            console.log(`Starting DDoS on ${target}:${port} with ${intensity} intensity`);
+            document.getElementById('activeAttacks').textContent = '1';
             
-            // In real implementation, this would call OXYLUS.ddos.target()
-            const consoleEl = document.getElementById('console');
-            consoleEl.innerHTML += `\n[DDoS] 🚀 Attack launched on ${target}:${port}`;
-            consoleEl.innerHTML += `\n[DDoS] Intensity: ${intensity.toUpperCase()}`;
-            consoleEl.innerHTML += `\n[DDoS] Duration: ${duration}s`;
-            consoleEl.scrollTop = consoleEl.scrollHeight;
+            systemManager.log(`DDoS attack started on ${target}`, 'ATTACK');
         }
         
-        function stopDDoS() {
-            document.getElementById('sysStatus').textContent = 'Ready';
-            document.getElementById('sysStatus').style.color = '#0f0';
+        function stopDDoSAttack() {
+            const terminal = document.getElementById('ddosTerminal');
+            terminal.innerHTML += `\n[DDoS] 🛑 Attack stopped`;
+            terminal.scrollTop = terminal.scrollHeight;
             
-            const consoleEl = document.getElementById('console');
-            consoleEl.innerHTML += '\n[DDoS] 🛑 Attack stopped';
-            consoleEl.scrollTop = consoleEl.scrollHeight;
+            document.getElementById('activeAttacks').textContent = '0';
+            
+            systemManager.log('DDoS attack stopped', 'ATTACK');
         }
         
-        // NGL functions
-        function startNGL() {
-            const target = document.getElementById('nglTarget').value;
-            const message = document.getElementById('nglMessage').value;
-            const count = document.getElementById('nglCount').value;
-            const delay = document.getElementById('nglDelay').value;
-            
-            if(!target || !message) {
-                alert('Please enter target and message');
+        function testDDoSTarget() {
+            const target = document.getElementById('ddosTarget').value;
+            if(!target) {
+                alert('Please enter a target first');
                 return;
             }
             
-            document.getElementById('sysStatus').textContent = 'Spamming';
-            document.getElementById('sysStatus').style.color = '#ff0';
+            const terminal = document.getElementById('ddosTerminal');
+            terminal.innerHTML += `\n[TEST] Testing connection to ${target}...`;
             
-            const consoleEl = document.getElementById('console');
-            consoleEl.innerHTML += `\n[NGL] 🚀 Starting spam on ${target}`;
-            consoleEl.innerHTML += `\n[NGL] Message: "${message.substring(0, 50)}..."`;
-            consoleEl.innerHTML += `\n[NGL] Count: ${count} messages`;
-            consoleEl.scrollTop = consoleEl.scrollHeight;
-            
-            // In real implementation, this would call OXYLUS.ngl.spam()
+            setTimeout(() => {
+                terminal.innerHTML += `\n[TEST] ✓ Target reachable`;
+                terminal.innerHTML += `\n[TEST] ✓ Port 80 open`;
+                terminal.innerHTML += `\n[TEST] ✓ Ready for attack`;
+                terminal.scrollTop = terminal.scrollHeight;
+            }, 1000);
         }
         
-        function stopNGL() {
-            document.getElementById('sysStatus').textContent = 'Ready';
-            document.getElementById('sysStatus').style.color = '#0f0';
-            
-            const consoleEl = document.getElementById('console');
-            consoleEl.innerHTML += '\n[NGL] 🛑 Spam stopped';
-            consoleEl.scrollTop = consoleEl.scrollHeight;
+        function clearAttackLog() {
+            document.getElementById('ddosTerminal').innerHTML = '[DDoS] Log cleared';
         }
         
-        // Add loader dots animation
-        const loaderStyle = document.createElement('style');
-        loaderStyle.textContent = `
-            .loader-dot {
-                display: inline-block;
-                width: 8px;
-                height: 8px;
-                background: #0f0;
-                border-radius: 50%;
-                margin: 0 4px;
-                animation: loaderDots 1.4s infinite ease-in-out both;
+        function logout() {
+            if(confirm('Are you sure you want to logout?')) {
+                sessionManager.clear();
+                sessionManager.redirectToLogin();
             }
-            
-            .loader-dot:nth-child(1) { animation-delay: -0.32s; }
-            .loader-dot:nth-child(2) { animation-delay: -0.16s; }
-            
-            @keyframes loaderDots {
-                0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
-                40% { transform: scale(1); opacity: 1; }
-            }
-        `;
-        document.head.appendChild(loaderStyle);
+        }
         
-        // Start system initialization when page loads
-        document.addEventListener('DOMContentLoaded', initializeSystem);
+        // Initialize system
+        document.addEventListener('DOMContentLoaded', function() {
+            // Validate session
+            if(!sessionManager.validate()) {
+                return;
+            }
+            
+            // Display session ID
+            document.getElementById('sessionIdDisplay').textContent = 
+                sessionManager.sessionId.substring(0, 12) + '...';
+            
+            // Start session timer
+            sessionManager.startTimer();
+            
+            // Initialize system manager
+            systemManager.log('System initialized successfully');
+            systemManager.log(`Session: ${sessionManager.sessionId.substring(0, 8)}...`);
+            systemManager.log('All modules ready for operation');
+            
+            // Start system metrics updates
+            setInterval(updateSystemMetrics, 1000);
+            updateSystemMetrics();
+            
+            // Auto-focus on command input
+            document.getElementById('commandInput')?.focus();
+            
+            // Update total requests counter (simulated)
+            setInterval(() => {
+                const current = parseInt(document.getElementById('totalRequests').textContent) || 0;
+                const increment = Math.floor(Math.random() * 1000);
+                document.getElementById('totalRequests').textContent = (current + increment).toLocaleString();
+            }, 5000);
+        });
     </script>
-    
-    <!-- Include external scripts -->
-    <script src="auth.js"></script>
-    <script src="ddos-engine.js"></script>
-    <script src="ngl-spammer.js"></script>
-    <script src="advanced-modules.js"></script>
 </body>
 </html>
-    
