@@ -1,45 +1,27 @@
-// auth.js - Authentication system for GUI
+// auth.js - Simplified session-based authentication
 const OXYLUS = {
-    password: "DinoProtocol",
-    authenticated: false,
-    
-    // Check if user is coming from login
-    checkAuth() {
-        // Check localStorage or session
-        const authStatus = localStorage.getItem('oxylus_auth');
-        if(authStatus === 'granted') {
-            this.authenticated = true;
-            return true;
-        }
+    // Check if session exists
+    checkSession() {
+        const session = localStorage.getItem('oxylus_session');
+        const sessionTime = localStorage.getItem('oxylus_session_time');
         
-        // Check URL parameter (fallback)
-        const urlParams = new URLSearchParams(window.location.search);
-        if(urlParams.get('auth') === 'true') {
-            this.authenticated = true;
-            localStorage.setItem('oxylus_auth', 'granted');
-            return true;
-        }
+        if(!session || !sessionTime) return false;
         
-        return false;
-    },
-    
-    // Set authentication
-    setAuth(status) {
-        this.authenticated = status;
-        if(status) {
-            localStorage.setItem('oxylus_auth', 'granted');
-        } else {
-            localStorage.removeItem('oxylus_auth');
-        }
+        // Check if session is not expired (12 hours)
+        const now = Date.now();
+        const sessionAge = now - parseInt(sessionTime);
+        const maxAge = 12 * 60 * 60 * 1000;
+        
+        return sessionAge < maxAge;
     },
     
     // Require authentication for commands
     requireAuth() {
-        if(!this.authenticated) {
+        if(!this.checkSession()) {
             console.log(`
-⚠️  AUTHENTICATION REQUIRED ⚠️
+⚠️  SESSION EXPIRED ⚠️
 
-Please login at the main page.
+Please login again at the main page.
             `);
             return false;
         }
@@ -48,16 +30,9 @@ Please login at the main page.
     
     // Logout
     logout() {
-        this.authenticated = false;
+        localStorage.removeItem('oxylus_session');
+        localStorage.removeItem('oxylus_session_time');
         localStorage.removeItem('oxylus_auth');
         window.location.href = 'index.html';
     }
 };
-
-// Auto-check on system.html
-if(window.location.pathname.includes('system.html')) {
-    if(!OXYLUS.checkAuth()) {
-        // Redirect to login if not authenticated
-        window.location.href = 'index.html';
-    }
-    }
