@@ -1,235 +1,770 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>System Initialization</title>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OXYLUS_PROTOCOL | Authentication</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* [Keep all previous CSS styles] */
+        :root {
+            --primary: #00ff00;
+            --primary-dark: #00cc00;
+            --primary-light: #00ff88;
+            --secondary: #000000;
+            --secondary-light: #111111;
+            --secondary-dark: #050505;
+            --accent: #ff0000;
+            --accent-light: #ff3333;
+            --text: #ffffff;
+            --text-dim: #aaaaaa;
+            --terminal-bg: rgba(0, 20, 0, 0.9);
+            --glow: 0 0 15px var(--primary);
+            --glow-strong: 0 0 25px var(--primary);
+        }
+        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
-            height: 100vh;
+            font-family: 'Courier New', 'Consolas', monospace;
+            background: var(--secondary);
+            color: var(--text);
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Matrix background effect */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.3;
+        }
+        
+        .matrix-code {
+            position: absolute;
+            color: var(--primary);
+            font-size: 18px;
+            animation: matrixFall linear infinite;
+            text-shadow: 0 0 8px var(--primary);
+        }
+        
+        @keyframes matrixFall {
+            to {
+                transform: translateY(100vh);
+            }
+        }
+        
+        /* Main container */
+        .main-container {
             display: flex;
+            min-height: 100vh;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Left panel - System info */
+        .system-panel {
+            flex: 1;
+            background: linear-gradient(135deg, var(--secondary-dark), var(--secondary));
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
             justify-content: center;
-            align-items: center;
+            border-right: 2px solid var(--primary);
+            position: relative;
             overflow: hidden;
         }
         
-        /* ... [All previous CSS remains exactly the same] ... */
+        .system-panel::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
         
+        .system-panel::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+        
+        .system-title {
+            font-size: 3.5rem;
+            color: var(--primary);
+            text-shadow: var(--glow-strong);
+            margin-bottom: 10px;
+            letter-spacing: 5px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        .system-title::after {
+            content: '_';
+            animation: blink 1s infinite;
+            position: absolute;
+            right: -20px;
+        }
+        
+        .system-subtitle {
+            color: var(--text-dim);
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            letter-spacing: 3px;
+        }
+        
+        .system-status {
+            background: var(--terminal-bg);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 25px;
+            margin-top: 40px;
+            box-shadow: var(--glow);
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed rgba(0, 255, 0, 0.3);
+        }
+        
+        .status-item:last-child {
+            border-bottom: none;
+        }
+        
+        .status-label {
+            color: var(--text-dim);
+        }
+        
+        .status-value {
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
+        .status-value.online {
+            color: var(--primary);
+            animation: pulse 2s infinite;
+        }
+        
+        .status-value.offline {
+            color: var(--accent);
+        }
+        
+        /* Right panel - Login */
+        .login-panel {
+            flex: 1;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(5, 5, 5, 0.95);
+            position: relative;
+        }
+        
+        .login-container {
+            width: 100%;
+            max-width: 500px;
+            background: var(--terminal-bg);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: var(--glow-strong);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(
+                to bottom right,
+                transparent 30%,
+                rgba(0, 255, 0, 0.1) 50%,
+                transparent 70%
+            );
+            animation: scan 10s linear infinite;
+        }
+        
+        @keyframes scan {
+            0% { transform: rotate(0deg) translateY(-50%); }
+            100% { transform: rotate(360deg) translateY(-50%); }
+        }
+        
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .login-title {
+            color: var(--primary);
+            font-size: 2rem;
+            margin-bottom: 10px;
+            text-shadow: var(--glow);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .login-icon {
+            font-size: 2.5rem;
+            animation: rotate 10s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .login-subtitle {
+            color: var(--text-dim);
+            font-size: 1rem;
+            letter-spacing: 2px;
+        }
+        
+        .input-group {
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .input-label {
+            display: block;
+            color: var(--primary);
+            margin-bottom: 12px;
+            font-size: 1.1rem;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 18px 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid var(--primary-dark);
+            border-radius: 8px;
+            color: var(--primary);
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+            font-family: 'Courier New', monospace;
+            transition: all 0.3s;
+            outline: none;
+        }
+        
+        .input-field:focus {
+            border-color: var(--primary);
+            box-shadow: var(--glow);
+            background: rgba(0, 10, 0, 0.9);
+        }
+        
+        .input-field::placeholder {
+            color: rgba(0, 255, 0, 0.3);
+            letter-spacing: normal;
+        }
+        
+        .password-strength {
+            height: 4px;
+            background: var(--secondary-light);
+            margin-top: 8px;
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .strength-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--accent);
+            transition: width 0.3s;
+        }
+        
+        .strength-bar.weak { width: 33%; background: var(--accent); }
+        .strength-bar.medium { width: 66%; background: #ff9900; }
+        .strength-bar.strong { width: 100%; background: var(--primary); }
+        
+        .login-btn {
+            width: 100%;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            border: none;
+            border-radius: 8px;
+            color: var(--secondary);
+            font-size: 1.3rem;
+            font-weight: bold;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .login-btn:hover {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            transform: translateY(-3px);
+            box-shadow: var(--glow-strong);
+        }
+        
+        .login-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .login-btn::after {
+            content: '▶';
+            position: absolute;
+            right: 20px;
+            font-size: 1.5rem;
+            opacity: 0.8;
+        }
+        
+        .login-btn.loading::after {
+            content: '⚡';
+            animation: flash 0.5s infinite;
+        }
+        
+        @keyframes flash {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .error-message {
+            color: var(--accent);
+            text-align: center;
+            margin-top: 20px;
+            min-height: 24px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .error-message.show {
+            opacity: 1;
+        }
+        
+        .attempts-counter {
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        /* Terminal output */
+        .terminal-output {
+            background: rgba(0, 0, 0, 0.95);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+            height: 150px;
+            overflow-y: auto;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--primary);
+            white-space: pre-wrap;
+            display: none;
+            box-shadow: inset 0 0 20px rgba(0, 255, 0, 0.1);
+        }
+        
+        .terminal-output.show {
+            display: block;
+            animation: terminalAppear 0.5s;
+        }
+        
+        .terminal-line {
+            margin-bottom: 5px;
+            opacity: 0;
+            animation: typeIn 0.3s forwards;
+        }
+        
+        @keyframes typeIn {
+            to { opacity: 1; }
+        }
+        
+        /* Footer */
+        .system-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            border-top: 1px solid var(--primary-dark);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            z-index: 10;
+        }
+        
+        .footer-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .blink {
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        @keyframes terminalAppear {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .system-panel, .login-panel {
+                padding: 20px;
+            }
+            
+            .system-title {
+                font-size: 2.5rem;
+            }
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--secondary);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-light);
+        }
     </style>
 </head>
 <body>
-    <div class="terminal-effect"></div>
+    <!-- Matrix Background -->
+    <div class="matrix-bg" id="matrixBg"></div>
     
-    <div class="login-container">
-        <div class="header">
-            <div class="logo">OXYLUS_PROTOCOL</div>
-            <div class="subtitle">Secure Execution System</div>
-            <div class="version">Version 4.0 | Build 2024.01</div>
+    <div class="main-container">
+        <!-- System Info Panel -->
+        <div class="system-panel">
+            <h1 class="system-title">OXYLUS_PROTOCOL</h1>
+            <p class="system-subtitle">EXECUTION FRAMEWORK v4.0</p>
+            
+            <div class="system-status">
+                <div class="status-item">
+                    <span class="status-label"><i class="fas fa-shield-alt"></i> System Status</span>
+                    <span class="status-value online">SECURE</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label"><i class="fas fa-server"></i> Server Connection</span>
+                    <span class="status-value online">ESTABLISHED</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label"><i class="fas fa-lock"></i> Encryption</span>
+                    <span class="status-value online">AES-256 ACTIVE</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label"><i class="fas fa-network-wired"></i> Network</span>
+                    <span class="status-value online">ANONYMIZED</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label"><i class="fas fa-clock"></i> Uptime</span>
+                    <span class="status-value online" id="uptimeCounter">00:00:00</span>
+                </div>
+            </div>
+            
+            <div class="terminal-output" id="systemTerminal">
+[BOOT] Initializing OXYLUS_PROTOCOL...
+[BOOT] Loading secure modules...
+[BOOT] Establishing encrypted connection...
+[BOOT] System integrity check: PASSED
+[BOOT] All systems nominal
+[BOOT] Ready for authentication
+            </div>
         </div>
         
-        <div class="input-group">
-            <label class="input-label">ACCESS AUTHORIZATION CODE</label>
-            <input 
-                type="password" 
-                id="passwordInput" 
-                class="password-input" 
-                placeholder="Enter system password"
-                autocomplete="off"
-                autofocus
-            >
-        </div>
-        
-        <div class="loader" id="loader">
-            <span></span>
-            <span></span>
-            <span></span>
-        </div>
-        
-        <button class="submit-btn" onclick="authenticate()">
-            INITIALIZE SYSTEM
-        </button>
-        
-        <div class="error-message" id="errorMessage">
-            <!-- Error messages appear here -->
-        </div>
-        
-        <div class="hint">
-            Hint: Case-sensitive authorization required
-        </div>
-        
-        <div class="terminal-output" id="terminalOutput">
-            [SYSTEM] Ready for authentication...
-        </div>
-        
-        <div class="status-bar" id="statusBar">
-            <span class="blink">●</span> System standby | Waiting for credentials
+        <!-- Login Panel -->
+        <div class="login-panel">
+            <div class="login-container">
+                <div class="login-header">
+                    <h2 class="login-title">
+                        <i class="fas fa-key login-icon"></i>
+                        ACCESS CONTROL
+                    </h2>
+                    <p class="login-subtitle">ENTER AUTHORIZATION CODE</p>
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">
+                        <i class="fas fa-fingerprint"></i>
+                        AUTHENTICATION TOKEN
+                    </label>
+                    <input 
+                        type="password" 
+                        id="passwordInput" 
+                        class="input-field" 
+                        placeholder="••••••••••••"
+                        autocomplete="off"
+                        autofocus
+                    >
+                    <div class="password-strength">
+                        <div class="strength-bar" id="strengthBar"></div>
+                    </div>
+                </div>
+                
+                <button class="login-btn" id="loginBtn" onclick="authenticate()">
+                    <i class="fas fa-terminal"></i> INITIATE SYSTEM
+                </button>
+                
+                <div class="error-message" id="errorMessage">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span id="errorText"></span>
+                </div>
+                
+                <div class="attempts-counter" id="attemptsCounter">
+                    Attempts: <span id="attemptsCount">0</span>/3
+                </div>
+            </div>
+            
+            <div class="terminal-output" id="authTerminal">
+[AUTH] System ready for authentication...
+[AUTH] Enter access code to proceed
+            </div>
         </div>
     </div>
     
-    <div class="system-info">
-        [SYSTEM] OXYLUS_PROTOCOL v4.0<br>
-        [TIME] <span id="currentTime">--:--:--</span> UTC
+    <!-- Footer -->
+    <div class="system-footer">
+        <div class="footer-item">
+            <i class="fas fa-satellite-dish blink"></i>
+            <span>CONNECTION: <span id="connectionStatus">SECURE</span></span>
+        </div>
+        <div class="footer-item">
+            <i class="fas fa-microchip"></i>
+            <span>SYSTEM: <span id="systemStatus">STANDBY</span></span>
+        </div>
+        <div class="footer-item">
+            <i class="fas fa-clock"></i>
+            <span id="currentTime">--:--:-- UTC</span>
+        </div>
     </div>
     
     <script>
-        // Check if already authenticated
-        function checkExistingSession() {
-            const session = localStorage.getItem('oxylus_session');
-            const sessionTime = localStorage.getItem('oxylus_session_time');
+        // Matrix background effect
+        function createMatrixEffect() {
+            const matrixBg = document.getElementById('matrixBg');
+            const chars = '01';
+            const fontSize = 18;
+            const columns = Math.floor(window.innerWidth / fontSize);
             
-            if(session && sessionTime) {
-                const now = Date.now();
-                const sessionAge = now - parseInt(sessionTime);
-                const maxAge = 12 * 60 * 60 * 1000; // 12 hours
+            for(let i = 0; i < columns; i++) {
+                const code = document.createElement('div');
+                code.className = 'matrix-code';
+                code.style.left = `${i * fontSize}px`;
+                code.style.animationDuration = `${Math.random() * 10 + 10}s`;
+                code.style.animationDelay = `${Math.random() * 5}s`;
+                code.textContent = chars[Math.floor(Math.random() * chars.length)];
+                matrixBg.appendChild(code);
                 
-                if(sessionAge < maxAge) {
-                    // Valid session exists, redirect to system
-                    console.log('[SESSION] Existing valid session found, redirecting...');
-                    window.location.href = 'system.html';
-                    return true;
-                } else {
-                    // Session expired, clear it
-                    localStorage.removeItem('oxylus_session');
-                    localStorage.removeItem('oxylus_session_time');
-                }
+                // Update text periodically
+                setInterval(() => {
+                    code.textContent = chars[Math.floor(Math.random() * chars.length)];
+                }, 100);
             }
-            return false;
         }
         
-        // Run session check on page load
-        if(checkExistingSession()) {
-            // Will redirect automatically
+        // Password strength indicator
+        function updatePasswordStrength(password) {
+            const strengthBar = document.getElementById('strengthBar');
+            if(!password) {
+                strengthBar.className = 'strength-bar';
+                return;
+            }
+            
+            let strength = 0;
+            if(password.length >= 4) strength++;
+            if(password.length >= 8) strength++;
+            if(/[A-Z]/.test(password)) strength++;
+            if(/[0-9]/.test(password)) strength++;
+            if(/[^A-Za-z0-9]/.test(password)) strength++;
+            
+            if(strength <= 2) {
+                strengthBar.className = 'strength-bar weak';
+            } else if(strength <= 4) {
+                strengthBar.className = 'strength-bar medium';
+            } else {
+                strengthBar.className = 'strength-bar strong';
+            }
+        }
+        
+        // System uptime counter
+        function startUptimeCounter() {
+            const uptimeEl = document.getElementById('uptimeCounter');
+            let seconds = 0;
+            
+            setInterval(() => {
+                seconds++;
+                const hours = Math.floor(seconds / 3600);
+                const minutes = Math.floor((seconds % 3600) / 60);
+                const secs = seconds % 60;
+                
+                uptimeEl.textContent = 
+                    `${hours.toString().padStart(2, '0')}:` +
+                    `${minutes.toString().padStart(2, '0')}:` +
+                    `${secs.toString().padStart(2, '0')}`;
+            }, 1000);
         }
         
         // Update time
         function updateTime() {
             const now = new Date();
             const timeStr = now.toUTCString().split(' ')[4];
-            document.getElementById('currentTime').textContent = timeStr;
+            document.getElementById('currentTime').textContent = timeStr + ' UTC';
         }
-        setInterval(updateTime, 1000);
-        updateTime();
         
-        // Password system
+        // Authentication system
         const SYSTEM_PASSWORD = "DinoProtocol";
         let attempts = 0;
         const MAX_ATTEMPTS = 3;
         
-        // Enter key support
-        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
-            if(e.key === 'Enter') {
-                authenticate();
-            }
-        });
-        
-        // Create session function
-        function createSession() {
-            const sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('oxylus_session', sessionId);
-            localStorage.setItem('oxylus_session_time', Date.now().toString());
-            localStorage.setItem('oxylus_auth', 'granted');
-            
-            // Also set session cookie as backup
-            document.cookie = `oxylus_session=${sessionId}; path=/; max-age=${12*60*60}; SameSite=Strict`;
-            
-            return sessionId;
-        }
-        
-        // Authentication function
         function authenticate() {
             const password = document.getElementById('passwordInput').value;
+            const loginBtn = document.getElementById('loginBtn');
             const errorEl = document.getElementById('errorMessage');
-            const loaderEl = document.getElementById('loader');
-            const terminalEl = document.getElementById('terminalOutput');
-            const statusEl = document.getElementById('statusBar');
+            const errorText = document.getElementById('errorText');
+            const attemptsCount = document.getElementById('attemptsCount');
+            const authTerminal = document.getElementById('authTerminal');
+            const systemStatus = document.getElementById('systemStatus');
             
-            // Clear previous errors
+            // Clear previous error
             errorEl.classList.remove('show');
-            errorEl.textContent = '';
             
-            // Show loading
-            loaderEl.style.display = 'block';
+            // Show loading state
+            loginBtn.classList.add('loading');
+            loginBtn.disabled = true;
+            systemStatus.textContent = 'AUTHENTICATING';
+            systemStatus.style.color = '#ff9900';
             
-            // Simulate processing delay
+            // Simulate processing
             setTimeout(() => {
-                loaderEl.style.display = 'none';
+                loginBtn.classList.remove('loading');
+                loginBtn.disabled = false;
                 
-                // Check password
                 if(password === SYSTEM_PASSWORD) {
                     // Success
                     attempts = 0;
+                    attemptsCount.textContent = attempts;
                     
                     // Update terminal
-                    terminalEl.classList.add('show');
-                    terminalEl.innerHTML += '\n[SYSTEM] Authentication successful...';
-                    terminalEl.innerHTML += '\n[SYSTEM] Creating secure session...';
-                    terminalEl.innerHTML += '\n[SYSTEM] Loading modules...';
-                    terminalEl.innerHTML += '\n[SYSTEM] Initializing system...';
-                    terminalEl.innerHTML += '\n[SYSTEM] Redirecting to control panel...';
+                    authTerminal.classList.add('show');
+                    authTerminal.innerHTML += '\n[AUTH] ✓ Access code verified';
+                    authTerminal.innerHTML += '\n[AUTH] Creating secure session...';
+                    authTerminal.innerHTML += '\n[AUTH] Redirecting to control panel...';
+                    authTerminal.scrollTop = authTerminal.scrollHeight;
+                    
+                    // Update UI
+                    systemStatus.textContent = 'ACCESS GRANTED';
+                    systemStatus.style.color = '#00ff00';
+                    
+                    // Update login button
+                    loginBtn.innerHTML = '<i class="fas fa-check"></i> ACCESS GRANTED';
+                    loginBtn.style.background = 'linear-gradient(135deg, #00cc00, #00ff00)';
+                    loginBtn.disabled = true;
+                    
+                    // Show success message
+                    errorText.textContent = 'Authentication successful. Redirecting...';
+                    errorEl.style.color = '#00ff00';
+                    errorEl.classList.add('show');
                     
                     // Create session
                     createSession();
                     
-                    // Update status
-                    statusEl.innerHTML = '<span style="color:#00ff00">●</span> Session created | Redirecting...';
-                    
-                    // Success message
-                    errorEl.textContent = '✓ Access granted. Creating session...';
-                    errorEl.style.color = '#00ff00';
-                    errorEl.classList.add('show');
-                    
-                    // Button text change
-                    document.querySelector('.submit-btn').textContent = 'SESSION CREATED';
-                    document.querySelector('.submit-btn').style.background = 'linear-gradient(90deg, #00aa00, #00ff00)';
-                    document.querySelector('.submit-btn').disabled = true;
-                    
-                    // Redirect to system after delay
+                    // Redirect after delay
                     setTimeout(() => {
-                        // Add redirect parameter to prevent loop
                         window.location.href = 'system.html?session=valid&t=' + Date.now();
                     }, 2000);
                     
                 } else {
                     // Failed
                     attempts++;
+                    attemptsCount.textContent = attempts;
                     
                     // Update terminal
-                    terminalEl.classList.add('show');
-                    terminalEl.innerHTML += `\n[AUTH] Attempt ${attempts}/${MAX_ATTEMPTS}: FAILED`;
+                    authTerminal.classList.add('show');
+                    authTerminal.innerHTML += `\n[AUTH] ❌ Attempt ${attempts} failed`;
+                    authTerminal.scrollTop = authTerminal.scrollHeight;
                     
-                    // Error messages based on attempts
-                    let errorMsg = '';
+                    // Update UI
+                    systemStatus.textContent = 'ACCESS DENIED';
+                    systemStatus.style.color = '#ff0000';
+                    
+                    // Error message
                     if(attempts >= MAX_ATTEMPTS) {
-                        errorMsg = 'SYSTEM LOCKED: Maximum attempts exceeded';
+                        errorText.textContent = 'SYSTEM LOCKED: Maximum attempts exceeded';
                         document.getElementById('passwordInput').disabled = true;
-                        document.querySelector('.submit-btn').disabled = true;
-                        document.querySelector('.submit-btn').style.opacity = '0.5';
-                        statusEl.innerHTML = '<span style="color:#ff0000">●</span> SYSTEM LOCKED';
+                        loginBtn.disabled = true;
+                        loginBtn.style.opacity = '0.5';
                         
                         // Auto-unlock after 30 seconds
                         setTimeout(() => {
                             attempts = 0;
+                            attemptsCount.textContent = attempts;
                             document.getElementById('passwordInput').disabled = false;
-                            document.querySelector('.submit-btn').disabled = false;
-                            document.querySelector('.submit-btn').style.opacity = '1';
+                            loginBtn.disabled = false;
+                            loginBtn.style.opacity = '1';
                             errorEl.classList.remove('show');
-                            statusEl.innerHTML = '<span class="blink">●</span> System standby';
-                            terminalEl.innerHTML += '\n[SYSTEM] Lock released. Ready for authentication.';
+                            systemStatus.textContent = 'STANDBY';
+                            systemStatus.style.color = '#aaaaaa';
+                            authTerminal.innerHTML += '\n[SYSTEM] Lock released';
                         }, 30000);
                     } else {
-                        errorMsg = `Access denied. ${MAX_ATTEMPTS - attempts} attempts remaining`;
-                        statusEl.innerHTML = `<span style="color:#ff9900">●</span> Access denied | ${MAX_ATTEMPTS - attempts} attempts left`;
+                        errorText.textContent = `Access denied. ${MAX_ATTEMPTS - attempts} attempts remaining`;
                     }
                     
-                    errorEl.textContent = errorMsg;
                     errorEl.style.color = '#ff3333';
                     errorEl.classList.add('show');
                     
@@ -238,28 +773,81 @@
                     document.getElementById('passwordInput').focus();
                     
                     // Shake animation
-                    document.querySelector('.login-container').style.animation = 'shake 0.5s';
+                    document.querySelector('.login-container').style.animation = 'none';
                     setTimeout(() => {
-                        document.querySelector('.login-container').style.animation = 'pulse 2s infinite alternate';
-                    }, 500);
+                        document.querySelector('.login-container').style.animation = 'scan 10s linear infinite';
+                    }, 10);
                 }
-                
-                // Scroll terminal to bottom
-                terminalEl.scrollTop = terminalEl.scrollHeight;
-                
-            }, 1500); // Processing delay
+            }, 1500);
         }
         
-        // Add shake animation
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes shake {
-                0%, 100% { transform: translateX(0); }
-                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
-                20%, 40%, 60%, 80% { transform: translateX(5px); }
+        // Session management
+        function createSession() {
+            const sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('oxylus_session', sessionId);
+            localStorage.setItem('oxylus_session_time', Date.now().toString());
+            localStorage.setItem('oxylus_auth', 'granted');
+            
+            // Set cookie as backup
+            document.cookie = `oxylus_session=${sessionId}; path=/; max-age=${12*60*60}; SameSite=Strict`;
+        }
+        
+        // Check existing session
+        function checkExistingSession() {
+            const session = localStorage.getItem('oxylus_session');
+            const sessionTime = localStorage.getItem('oxylus_session_time');
+            
+            if(session && sessionTime) {
+                const now = Date.now();
+                const sessionAge = now - parseInt(sessionTime);
+                const maxAge = 12 * 60 * 60 * 1000;
+                
+                if(sessionAge < maxAge) {
+                    // Redirect to system
+                    window.location.href = 'system.html';
+                    return true;
+                } else {
+                    // Clear expired session
+                    localStorage.removeItem('oxylus_session');
+                    localStorage.removeItem('oxylus_session_time');
+                }
             }
-        `;
-        document.head.appendChild(style);
+            return false;
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for existing session
+            if(checkExistingSession()) return;
+            
+            // Initialize effects
+            createMatrixEffect();
+            startUptimeCounter();
+            updateTime();
+            setInterval(updateTime, 1000);
+            
+            // Password strength listener
+            document.getElementById('passwordInput').addEventListener('input', function(e) {
+                updatePasswordStrength(e.target.value);
+            });
+            
+            // Enter key support
+            document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+                if(e.key === 'Enter') {
+                    authenticate();
+                }
+            });
+            
+            // Auto-scroll system terminal
+            const systemTerminal = document.getElementById('systemTerminal');
+            systemTerminal.scrollTop = systemTerminal.scrollHeight;
+        });
+        
+        // Window resize handler
+        window.addEventListener('resize', function() {
+            document.getElementById('matrixBg').innerHTML = '';
+            createMatrixEffect();
+        });
     </script>
 </body>
 </html>
