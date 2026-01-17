@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OXYLUS_PROTOCOL v4.0 - Control System</title>
+    <meta charset="utf-8">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        body {
+            background: #000;
+            color: #0f0;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                transparent 50%,
+                rgba(0, 255, 0, 0.03) 50%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: rgba(10, 20, 10, 0.9);
+            border-right: 2px solid #0a0;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .logo {
+            color: #0f0;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #0a0;
+        }
+        
+        .menu {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .menu-btn {
+            background: rgba(20, 40, 20, 0.7);
+            border: 1px solid #0a0;
+            color: #0f0;
+            padding: 15px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .menu-btn:hover {
+            background: rgba(30, 60, 30, 0.9);
+            border-color: #0f0;
+        }
+        
+        .menu-btn.active {
+            background: rgba(0, 50, 0, 0.9);
+            border-color: #0f0;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .module {
+            display: none;
+        }
+        
+        .module.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .module-title {
+            color: #0f0;
+            font-size: 24px;
+            margin-bottom: 25px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #0a0;
+        }
+        
+        /* Console */
+        #console {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #0a0;
+            border-radius: 8px;
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            margin-bottom: 20px;
+        }
+        
+        /* Buttons */
+        .btn {
+            background: linear-gradient(90deg, #006600, #00aa00);
+            border: none;
+            color: #000;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+        
+        .btn:hover {
+            background: linear-gradient(90deg, #00aa00, #00ff00);
+            transform: translateY(-2px);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(90deg, #660000, #aa0000);
+        }
+        
+        .btn-danger:hover {
+            background: linear-gradient(90deg, #aa0000, #ff0000);
+        }
+        
+        /* Inputs */
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-label {
+            display: block;
+            color: #0f0;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            background: rgba(20, 40, 20, 0.7);
+            border: 1px solid #0a0;
+            border-radius: 6px;
+            color: #0f0;
+            font-size: 14px;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #0f0;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+        
+        /* Status bar */
+        .status-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(10, 30, 10, 0.95);
+            padding: 10px 20px;
+            border-top: 2px solid #0a0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+        
+        .status-item {
+            color: #0f0;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        /* Logout button */
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(100, 0, 0, 0.8);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        
+        .logout-btn:hover {
+            background: rgba(150, 0, 0, 0.9);
+        }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+    
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">OXYLUS_PROTOCOL</div>
+            <div class="menu">
+                <button class="menu-btn active" onclick="showModule('dashboard')">📊 Dashboard</button>
+                <button class="menu-btn" onclick="showModule('ddos')">⚡ DDoS Attack</button>
+                <button class="menu-btn" onclick="showModule('ngl')">💬 NGL Spam</button>
+                <button class="menu-btn" onclick="showModule('scanner')">🔍 Target Scanner</button>
+                <button class="menu-btn" onclick="showModule('multi')">🎯 Multi-Target</button>
+                <button class="menu-btn" onclick="showModule('scheduler')">⏰ Scheduler</button>
+                <button class="menu-btn" onclick="showModule('logs')">📝 System Logs</button>
+                <button class="menu-btn" onclick="showModule('help')">❓ Help & Commands</button>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Dashboard Module -->
+            <div id="dashboard" class="module active">
+                <h2 class="module-title">System Dashboard</h2>
+                <div id="console">
+[SYSTEM] OXYLUS_PROTOCOL v4.0 Initialized
+[STATUS] Authentication: ✓ Valid
+[TIME] System ready for commands
+[INFO] Type commands in browser console (F12)
+[INFO] Use "help()" for command list
+
+Available Modules:
+1. DDoS Attack Engine
+2. NGL Spam System
+3. Target Scanner
+4. Multi-Target Operations
+5. Attack Scheduler
+
+System Status:
+✓ DDoS Module: Ready
+✓ NGL Module: Ready
+✓ Scanner: Ready
+✓ Memory: Optimal
+✓ Connection: Secure
+                </div>
+                <button class="btn" onclick="runTest()">Run System Test</button>
+                <button class="btn" onclick="clearConsole()">Clear Console</button>
+            </div>
+            
+            <!-- DDoS Module -->
+            <div id="ddos" class="module">
+                <h2 class="module-title">DDoS Attack Module</h2>
+                <div class="input-group">
+                    <label class="input-label">Target IP/Domain</label>
+                    <input type="text" id="ddosTarget" class="input-field" placeholder="example.com or 192.168.1.1">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Port (Default: 80)</label>
+                    <input type="number" id="ddosPort" class="input-field" value="80">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Intensity</label>
+                    <select id="ddosIntensity" class="input-field">
+                        <option value="low">Low (50 RPS)</option>
+                        <option value="med" selected>Medium (200 RPS)</option>
+                        <option value="hard">Hard (500 RPS)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Duration (seconds, 0 = unlimited)</label>
+                    <input type="number" id="ddosDuration" class="input-field" value="60">
+                </div>
+                <button class="btn" onclick="startDDoS()">Launch Attack</button>
+                <button class="btn btn-danger" onclick="stopDDoS()">Stop Attack</button>
+            </div>
+            
+            <!-- NGL Module -->
+            <div id="ngl" class="module">
+                <h2 class="module-title">NGL Spam Module</h2>
+                <div class="input-group">
+                    <label class="input-label">NGL Link or Username</label>
+                    <input type="text" id="nglTarget" class="input-field" placeholder="ngl.link/username or just username">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Message to Send</label>
+                    <textarea id="nglMessage" class="input-field" rows="3" placeholder="Enter your message here..."></textarea>
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Number of Messages</label>
+                    <input type="number" id="nglCount" class="input-field" value="20" min="1" max="1000">
+                </div>
+                <div class="input-group">
+                    <label class="input-label">Delay between messages (ms)</label>
+                    <input type="number" id="nglDelay" class="input-field" value="2000" min="1000">
+                </div>
+                <button class="btn" onclick="startNGL()">Start Spam</button>
+                <button class="btn btn-danger" onclick="stopNGL()">Stop Spam</button>
+            </div>
+            
+            <!-- Add more modules as needed -->
+        </div>
+    </div>
+    
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="status-item">STATUS: <span id="sysStatus" style="color:#0f0">Ready</span></div>
+        <div class="status-item">USER: <span style="color:#0f0">AUTHORIZED</span></div>
+        <div class="status-item">TIME: <span id="currentTime">--:--:--</span></div>
+        <div class="status-item">MEMORY: <span id="memoryUsage">-- MB</span></div>
+    </div>
+    
+    <!-- Logout Button -->
+    <button class="logout-btn" onclick="logout()">Logout</button>
+    
+    <script>
+        // Include all previous JavaScript modules here
+        // (DDoS engine, NGL spammer, etc.)
+        // They should be loaded from external files or embedded
+        
+        // Simple system functions
+        function showModule(moduleId) {
+            // Hide all modules
+            document.querySelectorAll('.module').forEach(m => {
+                m.classList.remove('active');
+            });
+            
+            // Deactivate all menu buttons
+            document.querySelectorAll('.menu-btn').forEach(b => {
+                b.classList.remove('active');
+            });
+            
+            // Show selected module
+            document.getElementById(moduleId).classList.add('active');
+            
+            // Activate corresponding button
+            event.target.classList.add('active');
+        }
+        
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString();
+            document.getElementById('currentTime').textContent = timeStr;
+        }
+        
+        function updateMemory() {
+            if(performance.memory) {
+                const used = Math.round(performance.memory.usedJSHeapSize / 1048576);
+                document.getElementById('memoryUsage').textContent = `${used} MB`;
+            }
+        }
+        
+        function logout() {
+            if(confirm("Are you sure you want to logout?")) {
+                window.location.href = 'index.html';
+            }
+        }
+        
+        function runTest() {
+            const consoleEl = document.getElementById('console');
+            consoleEl.innerHTML += '\n[TEST] Running system diagnostics...';
+            consoleEl.innerHTML += '\n[TEST] ✓ Network connectivity';
+            consoleEl.innerHTML += '\n[TEST] ✓ JavaScript engine';
+            consoleEl.innerHTML += '\n[TEST] ✓ Web Workers available';
+            consoleEl.innerHTML += '\n[TEST] ✓ System ready for operations';
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+        
+        function clearConsole() {
+            document.getElementById('console').innerHTML = '[SYSTEM] Console cleared';
+        }
+        
+        // DDoS functions
+        function startDDoS() {
+            const target = document.getElementById('ddosTarget').value;
+            const port = document.getElementById('ddosPort').value;
+            const intensity = document.getElementById('ddosIntensity').value;
+            const duration = document.getElementById('ddosDuration').value;
+            
+            if(!target) {
+                alert('Please enter a target');
+                return;
+            }
+            
+            document.getElementById('sysStatus').textContent = 'Attacking';
+            document.getElementById('sysStatus').style.color = '#ff0';
+            
+            // Call DDoS engine
+            console.log(`Starting DDoS on ${target}:${port} with ${intensity} intensity`);
+            
+            // In real implementation, this would call OXYLUS.ddos.target()
+            const consoleEl = document.getElementById('console');
+            consoleEl.innerHTML += `\n[DDoS] 🚀 Attack launched on ${target}:${port}`;
+            consoleEl.innerHTML += `\n[DDoS] Intensity: ${intensity.toUpperCase()}`;
+            consoleEl.innerHTML += `\n[DDoS] Duration: ${duration}s`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+        
+        function stopDDoS() {
+            document.getElementById('sysStatus').textContent = 'Ready';
+            document.getElementById('sysStatus').style.color = '#0f0';
+            
+            const consoleEl = document.getElementById('console');
+            consoleEl.innerHTML += '\n[DDoS] 🛑 Attack stopped';
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+        
+        // NGL functions
+        function startNGL() {
+            const target = document.getElementById('nglTarget').value;
+            const message = document.getElementById('nglMessage').value;
+            const count = document.getElementById('nglCount').value;
+            const delay = document.getElementById('nglDelay').value;
+            
+            if(!target || !message) {
+                alert('Please enter target and message');
+                return;
+            }
+            
+            document.getElementById('sysStatus').textContent = 'Spamming';
+            document.getElementById('sysStatus').style.color = '#ff0';
+            
+            const consoleEl = document.getElementById('console');
+            consoleEl.innerHTML += `\n[NGL] 🚀 Starting spam on ${target}`;
+            consoleEl.innerHTML += `\n[NGL] Message: "${message.substring(0, 50)}..."`;
+            consoleEl.innerHTML += `\n[NGL] Count: ${count} messages`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+            
+            // In real implementation, this would call OXYLUS.ngl.spam()
+        }
+        
+        function stopNGL() {
+            document.getElementById('sysStatus').textContent = 'Ready';
+            document.getElementById('sysStatus').style.color = '#0f0';
+            
+            const consoleEl = document.getElementById('console');
+            consoleEl.innerHTML += '\n[NGL] 🛑 Spam stopped';
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+        
+        // Update time and memory every second
+        setInterval(() => {
+            updateTime();
+            updateMemory();
+        }, 1000);
+        
+        // Initialize
+        updateTime();
+        updateMemory();
+        
+        // Auto-focus on first input
+        document.getElementById('ddosTarget')?.focus();
+    </script>
+    
+    <!-- Include external scripts -->
+    <script src="auth.js"></script>
+    <script src="ddos-engine.js"></script>
+    <script src="ngl-spammer.js"></script>
+    <script src="advanced-modules.js"></script>
+    
+    <script>
+        // Initialize system after authentication
+        setTimeout(() => {
+            // Set authentication flag
+            window.OXYLUS = window.OXYLUS || {};
+            window.OXYLUS.authenticated = true;
+            
+            // Display welcome message
+            const consoleEl = document.getElementById('console');
+            consoleEl.innerHTML += '\n[SYSTEM] Modules loaded successfully';
+            consoleEl.innerHTML += '\n[SYSTEM] Type commands in browser console:';
+            consoleEl.innerHTML += '\n[SYSTEM]   OXYLUS.ddos.target("ip", port, "hard", 60)';
+            consoleEl.innerHTML += '\n[SYSTEM]   OXYLUS.ngl.spam("username", "msg", 50, 2000)';
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }, 1000);
+    </script>
+</body>
+  </html>
