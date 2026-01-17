@@ -243,8 +243,9 @@
             letter-spacing: 2px;
         }
         
+        /* Input Groups */
         .input-group {
-            margin-bottom: 30px;
+            margin-bottom: 25px;
             position: relative;
         }
         
@@ -261,13 +262,13 @@
         
         .input-field {
             width: 100%;
-            padding: 18px 20px;
+            padding: 16px 20px;
             background: rgba(0, 0, 0, 0.7);
             border: 2px solid var(--primary-dark);
             border-radius: 8px;
             color: var(--primary);
             font-size: 1.2rem;
-            letter-spacing: 4px;
+            letter-spacing: 1px;
             font-family: 'Courier New', monospace;
             transition: all 0.3s;
             outline: none;
@@ -281,28 +282,7 @@
         
         .input-field::placeholder {
             color: rgba(0, 255, 0, 0.3);
-            letter-spacing: normal;
         }
-        
-        .password-strength {
-            height: 4px;
-            background: var(--secondary-light);
-            margin-top: 8px;
-            border-radius: 2px;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .strength-bar {
-            height: 100%;
-            width: 0%;
-            background: var(--accent);
-            transition: width 0.3s;
-        }
-        
-        .strength-bar.weak { width: 33%; background: var(--accent); }
-        .strength-bar.medium { width: 66%; background: #ff9900; }
-        .strength-bar.strong { width: 100%; background: var(--primary); }
         
         .login-btn {
             width: 100%;
@@ -319,7 +299,7 @@
             transition: all 0.3s;
             position: relative;
             overflow: hidden;
-            margin-top: 20px;
+            margin-top: 10px;
             font-family: 'Courier New', monospace;
         }
         
@@ -369,11 +349,39 @@
             opacity: 1;
         }
         
+        .success-message {
+            color: var(--primary);
+            text-align: center;
+            margin-top: 20px;
+            min-height: 24px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .success-message.show {
+            opacity: 1;
+        }
+        
         .attempts-counter {
             color: var(--text-dim);
             font-size: 0.8rem;
             text-align: center;
             margin-top: 15px;
+        }
+        
+        .account-type-hint {
+            color: var(--text-dim);
+            font-size: 0.8rem;
+            text-align: center;
+            margin-top: 10px;
+            padding: 10px;
+            background: rgba(0, 40, 0, 0.3);
+            border-radius: 6px;
         }
         
         /* Terminal output */
@@ -396,16 +404,6 @@
         .terminal-output.show {
             display: block;
             animation: terminalAppear 0.5s;
-        }
-        
-        .terminal-line {
-            margin-bottom: 5px;
-            opacity: 0;
-            animation: typeIn 0.3s forwards;
-        }
-        
-        @keyframes typeIn {
-            to { opacity: 1; }
         }
         
         /* Footer */
@@ -431,6 +429,7 @@
             gap: 10px;
         }
         
+        /* Animations */
         .blink {
             animation: blink 1s infinite;
         }
@@ -448,6 +447,12 @@
         @keyframes terminalAppear {
             from { opacity: 0; transform: translateY(20px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
         }
         
         /* Responsive */
@@ -492,7 +497,7 @@
         <!-- System Info Panel -->
         <div class="system-panel">
             <h1 class="system-title">OXYLUS_PROTOCOL</h1>
-            <p class="system-subtitle">EXECUTION FRAMEWORK v4.0</p>
+            <p class="system-subtitle">MULTI-USER EXECUTION FRAMEWORK v5.0</p>
             
             <div class="system-status">
                 <div class="status-item">
@@ -518,12 +523,19 @@
             </div>
             
             <div class="terminal-output" id="systemTerminal">
-[BOOT] Initializing OXYLUS_PROTOCOL...
-[BOOT] Loading secure modules...
+[BOOT] Initializing OXYLUS_PROTOCOL v5.0...
+[BOOT] Loading multi-user authentication...
 [BOOT] Establishing encrypted connection...
 [BOOT] System integrity check: PASSED
 [BOOT] All systems nominal
 [BOOT] Ready for authentication
+
+ACCOUNT TYPES:
+• Developer: Full system access
+• Special: Advanced features  
+• Guest: Basic features only
+
+ENTER CREDENTIALS TO CONTINUE
             </div>
         </div>
         
@@ -533,31 +545,42 @@
                 <div class="login-header">
                     <h2 class="login-title">
                         <i class="fas fa-key login-icon"></i>
-                        ACCESS CONTROL
+                        MULTI-USER AUTH
                     </h2>
-                    <p class="login-subtitle">ENTER AUTHORIZATION CODE</p>
+                    <p class="login-subtitle">ENTER CREDENTIALS TO CONTINUE</p>
+                </div>
+                
+                <div class="input-group">
+                    <label class="input-label">
+                        <i class="fas fa-user"></i>
+                        USERNAME
+                    </label>
+                    <input 
+                        type="text" 
+                        id="usernameInput" 
+                        class="input-field" 
+                        placeholder="Enter username"
+                        autocomplete="off"
+                        autofocus
+                    >
                 </div>
                 
                 <div class="input-group">
                     <label class="input-label">
                         <i class="fas fa-fingerprint"></i>
-                        AUTHENTICATION TOKEN
+                        PASSWORD
                     </label>
                     <input 
                         type="password" 
                         id="passwordInput" 
                         class="input-field" 
-                        placeholder="••••••••••••"
+                        placeholder="Enter password"
                         autocomplete="off"
-                        autofocus
                     >
-                    <div class="password-strength">
-                        <div class="strength-bar" id="strengthBar"></div>
-                    </div>
                 </div>
                 
                 <button class="login-btn" id="loginBtn" onclick="authenticate()">
-                    <i class="fas fa-terminal"></i> INITIATE SYSTEM
+                    <i class="fas fa-terminal"></i> AUTHENTICATE
                 </button>
                 
                 <div class="error-message" id="errorMessage">
@@ -565,14 +588,25 @@
                     <span id="errorText"></span>
                 </div>
                 
+                <div class="success-message" id="successMessage">
+                    <i class="fas fa-check-circle"></i>
+                    <span id="successText"></span>
+                </div>
+                
+                <div class="account-type-hint" id="accountTypeHint">
+                    <i class="fas fa-info-circle"></i>
+                    Default: Developer account access
+                </div>
+                
                 <div class="attempts-counter" id="attemptsCounter">
-                    Attempts: <span id="attemptsCount">0</span>/3
+                    Attempts: <span id="attemptsCount">0</span>/5
                 </div>
             </div>
             
             <div class="terminal-output" id="authTerminal">
-[AUTH] System ready for authentication...
-[AUTH] Enter access code to proceed
+[AUTH] Multi-user authentication system ready
+[AUTH] Enter username and password
+[AUTH] System supports: Developer, Special, Guest accounts
             </div>
         </div>
     </div>
@@ -585,7 +619,7 @@
         </div>
         <div class="footer-item">
             <i class="fas fa-microchip"></i>
-            <span>SYSTEM: <span id="systemStatus">STANDBY</span></span>
+            <span>SYSTEM: <span id="systemStatus">AWAITING CREDENTIALS</span></span>
         </div>
         <div class="footer-item">
             <i class="fas fa-clock"></i>
@@ -594,7 +628,132 @@
     </div>
     
     <script>
-        // Matrix background effect
+        // ==================== AUTHENTICATION SYSTEM ====================
+        const AUTH_SYSTEM = {
+            // Master developer account
+            MASTER_DEV: {
+                password: "DinoDevProtocol",
+                type: "developer",
+                permissions: ["all"],
+                expired: null
+            },
+            
+            // User accounts storage
+            users: {},
+            
+            // Current session
+            currentUser: null,
+            sessionExpiry: null,
+            
+            // Initialize
+            init() {
+                // Load users from localStorage
+                this.loadUsers();
+                
+                // Check for existing session
+                if(this.checkExistingSession()) {
+                    window.location.href = 'system.html';
+                    return;
+                }
+                
+                console.log('[AUTH] Multi-user system initialized');
+            },
+            
+            // Load users from storage
+            loadUsers() {
+                const stored = localStorage.getItem('oxylus_users');
+                if(stored) {
+                    this.users = JSON.parse(stored);
+                }
+                
+                // Always include master dev
+                this.users['dev_master'] = this.MASTER_DEV;
+            },
+            
+            // Authenticate user
+            authenticate(username, password) {
+                // Check master dev
+                if(password === this.MASTER_DEV.password) {
+                    this.currentUser = {
+                        username: 'dev_master',
+                        type: 'developer',
+                        permissions: ['all'],
+                        created: new Date().toISOString()
+                    };
+                    this.createSession(0);
+                    return { success: true, user: this.currentUser };
+                }
+                
+                // Check regular users
+                const user = this.users[username];
+                if(user && user.password === password) {
+                    // Check if account expired
+                    if(user.expired && new Date(user.expired) < new Date()) {
+                        return { success: false, error: 'Account expired' };
+                    }
+                    
+                    this.currentUser = {
+                        username: username,
+                        type: user.type,
+                        permissions: user.permissions || [],
+                        created: user.created
+                    };
+                    
+                    // Session duration based on account type
+                    const sessionHours = user.type === 'developer' ? 12 : 
+                                       user.type === 'special' ? 6 : 2;
+                    this.createSession(sessionHours);
+                    
+                    return { success: true, user: this.currentUser };
+                }
+                
+                return { success: false, error: 'Invalid credentials' };
+            },
+            
+            // Create session
+            createSession(hours) {
+                this.sessionExpiry = hours > 0 ? 
+                    Date.now() + (hours * 60 * 60 * 1000) : 
+                    null;
+                
+                localStorage.setItem('oxylus_session', JSON.stringify({
+                    user: this.currentUser,
+                    expiry: this.sessionExpiry
+                }));
+            },
+            
+            // Check existing session
+            checkExistingSession() {
+                const session = localStorage.getItem('oxylus_session');
+                if(!session) return false;
+                
+                try {
+                    const data = JSON.parse(session);
+                    
+                    // Check if session expired
+                    if(data.expiry && data.expiry < Date.now()) {
+                        this.clearSession();
+                        return false;
+                    }
+                    
+                    this.currentUser = data.user;
+                    this.sessionExpiry = data.expiry;
+                    return true;
+                } catch(e) {
+                    this.clearSession();
+                    return false;
+                }
+            },
+            
+            // Clear session
+            clearSession() {
+                this.currentUser = null;
+                this.sessionExpiry = null;
+                localStorage.removeItem('oxylus_session');
+            }
+        };
+        
+        // ==================== VISUAL EFFECTS ====================
         function createMatrixEffect() {
             const matrixBg = document.getElementById('matrixBg');
             const chars = '01';
@@ -610,38 +769,22 @@
                 code.textContent = chars[Math.floor(Math.random() * chars.length)];
                 matrixBg.appendChild(code);
                 
-                // Update text periodically
                 setInterval(() => {
                     code.textContent = chars[Math.floor(Math.random() * chars.length)];
                 }, 100);
             }
         }
         
-        // Password strength indicator
-        function updatePasswordStrength(password) {
-            const strengthBar = document.getElementById('strengthBar');
-            if(!password) {
-                strengthBar.className = 'strength-bar';
-                return;
-            }
-            
-            let strength = 0;
-            if(password.length >= 4) strength++;
-            if(password.length >= 8) strength++;
-            if(/[A-Z]/.test(password)) strength++;
-            if(/[0-9]/.test(password)) strength++;
-            if(/[^A-Za-z0-9]/.test(password)) strength++;
-            
-            if(strength <= 2) {
-                strengthBar.className = 'strength-bar weak';
-            } else if(strength <= 4) {
-                strengthBar.className = 'strength-bar medium';
-            } else {
-                strengthBar.className = 'strength-bar strong';
-            }
+        // ==================== SYSTEM FUNCTIONS ====================
+        let attempts = 0;
+        const MAX_ATTEMPTS = 5;
+        
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toUTCString().split(' ')[4];
+            document.getElementById('currentTime').textContent = timeStr + ' UTC';
         }
         
-        // System uptime counter
         function startUptimeCounter() {
             const uptimeEl = document.getElementById('uptimeCounter');
             let seconds = 0;
@@ -659,74 +802,81 @@
             }, 1000);
         }
         
-        // Update time
-        function updateTime() {
-            const now = new Date();
-            const timeStr = now.toUTCString().split(' ')[4];
-            document.getElementById('currentTime').textContent = timeStr + ' UTC';
-        }
-        
-        // Authentication system
-        const SYSTEM_PASSWORD = "DinoProtocol";
-        let attempts = 0;
-        const MAX_ATTEMPTS = 3;
-        
+        // ==================== AUTHENTICATION ====================
         function authenticate() {
+            const username = document.getElementById('usernameInput').value.trim();
             const password = document.getElementById('passwordInput').value;
             const loginBtn = document.getElementById('loginBtn');
             const errorEl = document.getElementById('errorMessage');
             const errorText = document.getElementById('errorText');
+            const successEl = document.getElementById('successMessage');
+            const successText = document.getElementById('successText');
             const attemptsCount = document.getElementById('attemptsCount');
             const authTerminal = document.getElementById('authTerminal');
             const systemStatus = document.getElementById('systemStatus');
+            const accountTypeHint = document.getElementById('accountTypeHint');
             
-            // Clear previous error
+            // Clear messages
             errorEl.classList.remove('show');
+            successEl.classList.remove('show');
+            
+            // Validate input
+            if(!username || !password) {
+                errorText.textContent = 'Please enter username and password';
+                errorEl.classList.add('show');
+                return;
+            }
             
             // Show loading state
             loginBtn.classList.add('loading');
             loginBtn.disabled = true;
-            systemStatus.textContent = 'AUTHENTICATING';
+            systemStatus.textContent = 'AUTHENTICATING...';
             systemStatus.style.color = '#ff9900';
             
-            // Simulate processing
+            // Simulate processing delay
             setTimeout(() => {
                 loginBtn.classList.remove('loading');
                 loginBtn.disabled = false;
                 
-                if(password === SYSTEM_PASSWORD) {
+                const result = AUTH_SYSTEM.authenticate(username, password);
+                
+                if(result.success) {
                     // Success
                     attempts = 0;
                     attemptsCount.textContent = attempts;
-                    
-                    // Update terminal
-                    authTerminal.classList.add('show');
-                    authTerminal.innerHTML += '\n[AUTH] ✓ Access code verified';
-                    authTerminal.innerHTML += '\n[AUTH] Creating secure session...';
-                    authTerminal.innerHTML += '\n[AUTH] Redirecting to control panel...';
-                    authTerminal.scrollTop = authTerminal.scrollHeight;
                     
                     // Update UI
                     systemStatus.textContent = 'ACCESS GRANTED';
                     systemStatus.style.color = '#00ff00';
                     
+                    // Update terminal
+                    authTerminal.classList.add('show');
+                    authTerminal.innerHTML += `\n[AUTH] ✓ Welcome ${result.user.type.toUpperCase()} user`;
+                    authTerminal.innerHTML += '\n[AUTH] Creating secure session...';
+                    authTerminal.innerHTML += '\n[AUTH] Redirecting to control panel...';
+                    authTerminal.scrollTop = authTerminal.scrollHeight;
+                    
+                    // Show success message
+                    const accountType = result.user.type.toUpperCase();
+                    successText.textContent = `Authentication successful! Welcome ${accountType} user`;
+                    successEl.style.color = '#00ff00';
+                    successEl.classList.add('show');
+                    
+                    // Update account type hint
+                    accountTypeHint.innerHTML = `
+                        <i class="fas fa-user-tag"></i>
+                        Logged in as: <strong>${accountType}</strong> account
+                    `;
+                    
                     // Update login button
-                    loginBtn.innerHTML = '<i class="fas fa-check"></i> ACCESS GRANTED';
+                    loginBtn.innerHTML = `<i class="fas fa-check"></i> ${accountType} ACCESS GRANTED`;
                     loginBtn.style.background = 'linear-gradient(135deg, #00cc00, #00ff00)';
                     loginBtn.disabled = true;
                     
-                    // Show success message
-                    errorText.textContent = 'Authentication successful. Redirecting...';
-                    errorEl.style.color = '#00ff00';
-                    errorEl.classList.add('show');
-                    
-                    // Create session
-                    createSession();
-                    
                     // Redirect after delay
                     setTimeout(() => {
-                        window.location.href = 'system.html?session=valid&t=' + Date.now();
-                    }, 2000);
+                        window.location.href = 'system.html';
+                    }, 1500);
                     
                 } else {
                     // Failed
@@ -735,7 +885,7 @@
                     
                     // Update terminal
                     authTerminal.classList.add('show');
-                    authTerminal.innerHTML += `\n[AUTH] ❌ Attempt ${attempts} failed`;
+                    authTerminal.innerHTML += `\n[AUTH] ❌ Attempt ${attempts} failed: ${result.error}`;
                     authTerminal.scrollTop = authTerminal.scrollHeight;
                     
                     // Update UI
@@ -745,24 +895,26 @@
                     // Error message
                     if(attempts >= MAX_ATTEMPTS) {
                         errorText.textContent = 'SYSTEM LOCKED: Maximum attempts exceeded';
+                        document.getElementById('usernameInput').disabled = true;
                         document.getElementById('passwordInput').disabled = true;
                         loginBtn.disabled = true;
                         loginBtn.style.opacity = '0.5';
                         
-                        // Auto-unlock after 30 seconds
+                        // Auto-unlock after 60 seconds
                         setTimeout(() => {
                             attempts = 0;
                             attemptsCount.textContent = attempts;
+                            document.getElementById('usernameInput').disabled = false;
                             document.getElementById('passwordInput').disabled = false;
                             loginBtn.disabled = false;
                             loginBtn.style.opacity = '1';
                             errorEl.classList.remove('show');
-                            systemStatus.textContent = 'STANDBY';
+                            systemStatus.textContent = 'AWAITING CREDENTIALS';
                             systemStatus.style.color = '#aaaaaa';
                             authTerminal.innerHTML += '\n[SYSTEM] Lock released';
-                        }, 30000);
+                        }, 60000);
                     } else {
-                        errorText.textContent = `Access denied. ${MAX_ATTEMPTS - attempts} attempts remaining`;
+                        errorText.textContent = `${result.error}. ${MAX_ATTEMPTS - attempts} attempts remaining`;
                     }
                     
                     errorEl.style.color = '#ff3333';
@@ -773,52 +925,18 @@
                     document.getElementById('passwordInput').focus();
                     
                     // Shake animation
-                    document.querySelector('.login-container').style.animation = 'none';
+                    document.querySelector('.login-container').style.animation = 'shake 0.5s';
                     setTimeout(() => {
                         document.querySelector('.login-container').style.animation = 'scan 10s linear infinite';
-                    }, 10);
+                    }, 500);
                 }
             }, 1500);
         }
         
-        // Session management
-        function createSession() {
-            const sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('oxylus_session', sessionId);
-            localStorage.setItem('oxylus_session_time', Date.now().toString());
-            localStorage.setItem('oxylus_auth', 'granted');
-            
-            // Set cookie as backup
-            document.cookie = `oxylus_session=${sessionId}; path=/; max-age=${12*60*60}; SameSite=Strict`;
-        }
-        
-        // Check existing session
-        function checkExistingSession() {
-            const session = localStorage.getItem('oxylus_session');
-            const sessionTime = localStorage.getItem('oxylus_session_time');
-            
-            if(session && sessionTime) {
-                const now = Date.now();
-                const sessionAge = now - parseInt(sessionTime);
-                const maxAge = 12 * 60 * 60 * 1000;
-                
-                if(sessionAge < maxAge) {
-                    // Redirect to system
-                    window.location.href = 'system.html';
-                    return true;
-                } else {
-                    // Clear expired session
-                    localStorage.removeItem('oxylus_session');
-                    localStorage.removeItem('oxylus_session_time');
-                }
-            }
-            return false;
-        }
-        
-        // Initialize
+        // ==================== INITIALIZATION ====================
         document.addEventListener('DOMContentLoaded', function() {
-            // Check for existing session
-            if(checkExistingSession()) return;
+            // Initialize auth system
+            AUTH_SYSTEM.init();
             
             // Initialize effects
             createMatrixEffect();
@@ -826,15 +944,16 @@
             updateTime();
             setInterval(updateTime, 1000);
             
-            // Password strength listener
-            document.getElementById('passwordInput').addEventListener('input', function(e) {
-                updatePasswordStrength(e.target.value);
-            });
-            
             // Enter key support
             document.getElementById('passwordInput').addEventListener('keypress', function(e) {
                 if(e.key === 'Enter') {
                     authenticate();
+                }
+            });
+            
+            document.getElementById('usernameInput').addEventListener('keypress', function(e) {
+                if(e.key === 'Enter') {
+                    document.getElementById('passwordInput').focus();
                 }
             });
             
@@ -851,3 +970,4 @@
     </script>
 </body>
 </html>
+            
