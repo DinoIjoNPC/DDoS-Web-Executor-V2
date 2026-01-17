@@ -54,6 +54,41 @@
             opacity: 0.5;
         }
         
+        /* Loading Screen */
+        #loadingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .loader-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #0f0;
+            border-radius: 50%;
+            margin: 0 4px;
+            animation: loaderDots 1.4s infinite ease-in-out both;
+        }
+        
+        .loader-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loader-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes loaderDots {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        
         /* Header */
         .system-header {
             background: rgba(0, 0, 0, 0.9);
@@ -678,7 +713,7 @@
             
             .sidebar {
                 width: 100%;
-                height: auto;
+            height: auto;
                 border-right: none;
                 border-bottom: 2px solid var(--primary-dark);
             }
@@ -693,582 +728,745 @@
     <!-- Background -->
     <div class="hex-bg"></div>
     
-    <!-- Header -->
-    <header class="system-header">
-        <div class="header-left">
-            <div class="system-logo">OXYLUS_PROTOCOL</div>
-            <div class="system-version">v4.0 | EXECUTION MODE</div>
-        </div>
-        <div class="header-right">
-            <div class="status-indicator">
-                <div class="status-dot"></div>
-                <span>SYSTEM ACTIVE</span>
-            </div>
-            <div class="user-info">
-                <i class="fas fa-user-secret"></i>
-                <span>USER: <span id="usernameDisplay">ADMIN</span></span>
+    <!-- Loading Screen -->
+    <div id="loadingScreen">
+        <div style="text-align: center;">
+            <div style="margin-bottom: 20px; font-size: 1.2rem;">OXYLUS_PROTOCOL v5.0</div>
+            <div id="loadingText">Validating session...</div>
+            <div style="margin-top: 20px;">
+                <span class="loader-dot"></span>
+                <span class="loader-dot"></span>
+                <span class="loader-dot"></span>
             </div>
         </div>
-    </header>
+    </div>
     
-    <!-- Main Layout -->
-    <div class="main-layout">
-        <!-- Sidebar -->
-        <nav class="sidebar">
-            <div class="user-profile">
-                <div class="avatar">
-                    <i class="fas fa-robot"></i>
-                </div>
-                <div class="username">SYSTEM_ADMIN</div>
-                <div class="user-role">EXECUTIVE OPERATOR</div>
+    <!-- Main Interface (hidden until loaded) -->
+    <div style="display: none;" id="mainInterface">
+        <!-- Header -->
+        <header class="system-header">
+            <div class="header-left">
+                <div class="system-logo">OXYLUS_PROTOCOL</div>
+                <div class="system-version" id="systemVersion">v5.0 | <span id="userTypeDisplay">LOADING</span></div>
             </div>
-            
-            <div class="nav-menu">
-                <div class="nav-item active" onclick="showModule('dashboard')">
-                    <i class="fas fa-tachometer-alt nav-icon"></i>
-                    <span class="nav-text">DASHBOARD</span>
+            <div class="header-right">
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span id="systemStatusText">SYSTEM ACTIVE</span>
                 </div>
-                
-                <div class="nav-item" onclick="showModule('ddos')">
-                    <i class="fas fa-bolt nav-icon"></i>
-                    <span class="nav-text">DDoS ATTACK</span>
-                    <span class="nav-badge">NEW</span>
-                </div>
-                
-                <div class="nav-item" onclick="showModule('ngl')">
-                    <i class="fas fa-comment-dots nav-icon"></i>
-                    <span class="nav-text">NGL SPAM</span>
-                    <span class="nav-badge">HOT</span>
-                </div>
-                
-                <div class="nav-item" onclick="showModule('scanner')">
-                    <i class="fas fa-search nav-icon"></i>
-                    <span class="nav-text">TARGET SCANNER</span>
-                </div>
-                
-                <div class="nav-item" onclick="showModule('multi')">
-                    <i class="fas fa-crosshairs nav-icon"></i>
-                    <span class="nav-text">MULTI-TARGET</span>
-                </div>
-                
-                <div class="nav-item" onclick="showModule('scheduler')">
-                    <i class="fas fa-clock nav-icon"></i>
-                    <span class="nav-text">SCHEDULER</span>
-                </div>
-                
-                <div class="nav-item" onclick="showModule('logs')">
-                    <i class="fas fa-clipboard-list nav-icon"></i>
-                    <span class="nav-text">SYSTEM LOGS</span>
-                </div>
-                
-                <div class="nav-item" onclick="showModule('settings')">
-                    <i class="fas fa-cog nav-icon"></i>
-                    <span class="nav-text">SETTINGS</span>
+                <div class="user-info">
+                    <i class="fas fa-user-secret"></i>
+                    <span>USER: <span id="usernameDisplay">LOADING</span></span>
                 </div>
             </div>
-            
-            <div class="sidebar-footer">
-                <div class="session-timer">
-                    <i class="fas fa-hourglass-half"></i>
-                    SESSION: <span id="sessionTimer">12:00</span>
-                </div>
-                <button class="logout-btn" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i>
-                    LOGOUT
-                </button>
-            </div>
-        </nav>
+        </header>
         
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Dashboard Module -->
-            <div id="dashboard" class="module active">
-                <div class="content-header">
-                    <h1 class="content-title">
-                        <i class="fas fa-tachometer-alt"></i>
-                        SYSTEM DASHBOARD
-                    </h1>
-                    <p class="content-subtitle">Real-time monitoring and control interface</p>
+        <!-- Main Layout -->
+        <div class="main-layout">
+            <!-- Sidebar -->
+            <nav class="sidebar">
+                <div class="user-profile">
+                    <div class="avatar" id="userAvatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="username" id="sidebarUsername">LOADING</div>
+                    <div class="user-role" id="sidebarRole">LOADING</div>
                 </div>
                 
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div>
-                                <div class="stat-title">SYSTEM STATUS</div>
-                                <div class="stat-value">ACTIVE</div>
-                            </div>
-                            <i class="fas fa-shield-alt stat-icon"></i>
-                        </div>
-                        <div class="stat-trend trend-up">
-                            <i class="fas fa-arrow-up"></i> All systems operational
-                        </div>
+                <div class="nav-menu">
+                    <div class="nav-item active" onclick="showModule('dashboard')">
+                        <i class="fas fa-tachometer-alt nav-icon"></i>
+                        <span class="nav-text">DASHBOARD</span>
                     </div>
                     
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div>
-                                <div class="stat-title">ACTIVE ATTACKS</div>
-                                <div class="stat-value" id="activeAttacks">0</div>
-                            </div>
-                            <i class="fas fa-bolt stat-icon"></i>
-                        </div>
-                        <div class="stat-trend trend-down">
-                            <i class="fas fa-arrow-down"></i> No active attacks
-                        </div>
+                    <div class="nav-item" onclick="showModule('ddos')">
+                        <i class="fas fa-bolt nav-icon"></i>
+                        <span class="nav-text">DDoS ATTACK</span>
+                        <span class="nav-badge" id="ddosBadge">NEW</span>
                     </div>
                     
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div>
-                                <div class="stat-title">TOTAL REQUESTS</div>
-                                <div class="stat-value" id="totalRequests">0</div>
-                            </div>
-                            <i class="fas fa-exchange-alt stat-icon"></i>
-                        </div>
-                        <div class="stat-trend trend-up">
-                            <i class="fas fa-arrow-up"></i> Ready for operations
-                        </div>
+                    <div class="nav-item" onclick="showModule('ngl')">
+                        <i class="fas fa-comment-dots nav-icon"></i>
+                        <span class="nav-text">NGL SPAM</span>
+                        <span class="nav-badge" id="nglBadge">HOT</span>
                     </div>
                     
-                    <div class="stat-card">
-                        <div class="stat-header">
-                            <div>
-                                <div class="stat-title">SUCCESS RATE</div>
-                                <div class="stat-value" id="successRate">100%</div>
-                            </div>
-                            <i class="fas fa-chart-line stat-icon"></i>
-                        </div>
-                        <div class="stat-trend trend-up">
-                            <i class="fas fa-arrow-up"></i> Optimal performance
-                        </div>
+                    <div class="nav-item" onclick="showModule('scanner')">
+                        <i class="fas fa-search nav-icon"></i>
+                        <span class="nav-text">TARGET SCANNER</span>
+                    </div>
+                    
+                    <div class="nav-item" onclick="showModule('multi')" id="multiNavItem">
+                        <i class="fas fa-crosshairs nav-icon"></i>
+                        <span class="nav-text">MULTI-TARGET</span>
+                    </div>
+                    
+                    <div class="nav-item" onclick="showModule('scheduler')" id="schedulerNavItem">
+                        <i class="fas fa-clock nav-icon"></i>
+                        <span class="nav-text">SCHEDULER</span>
+                    </div>
+                    
+                    <div class="nav-item" onclick="showModule('devpanel')" id="devpanelNavItem">
+                        <i class="fas fa-user-shield nav-icon"></i>
+                        <span class="nav-text">DEVELOPER PANEL</span>
+                        <span class="nav-badge">DEV</span>
+                    </div>
+                    
+                    <div class="nav-item" onclick="showModule('logs')">
+                        <i class="fas fa-clipboard-list nav-icon"></i>
+                        <span class="nav-text">SYSTEM LOGS</span>
+                    </div>
+                    
+                    <div class="nav-item" onclick="showModule('help')">
+                        <i class="fas fa-question-circle nav-icon"></i>
+                        <span class="nav-text">HELP & COMMANDS</span>
                     </div>
                 </div>
                 
-                <div class="command-terminal">
-                    <div class="terminal-header">
-                        <div class="terminal-title">
-                            <i class="fas fa-terminal"></i>
-                            SYSTEM COMMAND INTERFACE
+                <div class="sidebar-footer">
+                    <div class="session-timer">
+                        <i class="fas fa-hourglass-half"></i>
+                        SESSION: <span id="sessionTimer">12:00</span>
+                    </div>
+                    <button class="logout-btn" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        LOGOUT
+                    </button>
+                </div>
+            </nav>
+            
+            <!-- Main Content -->
+            <main class="main-content">
+                <!-- Dashboard Module -->
+                <div id="dashboard" class="module active">
+                    <div class="content-header">
+                        <h1 class="content-title">
+                            <i class="fas fa-tachometer-alt"></i>
+                            SYSTEM DASHBOARD
+                        </h1>
+                        <p class="content-subtitle" id="dashboardSubtitle">Real-time monitoring and control interface</p>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">ACCOUNT TYPE</div>
+                                    <div class="stat-value" id="accountTypeValue">LOADING</div>
+                                </div>
+                                <i class="fas fa-user-tag stat-icon"></i>
+                            </div>
+                            <div class="stat-trend trend-up" id="accountStatus">
+                                <i class="fas fa-check-circle"></i> Session active
+                            </div>
                         </div>
-                        <div class="terminal-controls">
-                            <button class="term-btn" onclick="clearTerminal()">
-                                <i class="fas fa-trash"></i> Clear
+                        
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">ACTIVE ATTACKS</div>
+                                    <div class="stat-value" id="activeAttacks">0</div>
+                                </div>
+                                <i class="fas fa-bolt stat-icon"></i>
+                            </div>
+                            <div class="stat-trend trend-down">
+                                <i class="fas fa-arrow-down"></i> No active attacks
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">SYSTEM UPTIME</div>
+                                    <div class="stat-value" id="systemUptime">00:00</div>
+                                </div>
+                                <i class="fas fa-clock stat-icon"></i>
+                            </div>
+                            <div class="stat-trend trend-up">
+                                <i class="fas fa-arrow-up"></i> All systems operational
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">PERMISSION LEVEL</div>
+                                    <div class="stat-value" id="permissionLevel">--</div>
+                                </div>
+                                <i class="fas fa-shield-alt stat-icon"></i>
+                            </div>
+                            <div class="stat-trend trend-up">
+                                <i class="fas fa-lock"></i> Security active
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="command-terminal">
+                        <div class="terminal-header">
+                            <div class="terminal-title">
+                                <i class="fas fa-terminal"></i>
+                                SYSTEM COMMAND INTERFACE
+                            </div>
+                            <div class="terminal-controls">
+                                <button class="term-btn" onclick="clearTerminal()">
+                                    <i class="fas fa-trash"></i> Clear
+                                </button>
+                                <button class="term-btn" onclick="runDiagnostics()">
+                                    <i class="fas fa-stethoscope"></i> Test
+                                </button>
+                                <button class="term-btn" onclick="showCommands()">
+                                    <i class="fas fa-code"></i> Commands
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="terminal-output" id="mainTerminal">
+[SYSTEM] OXYLUS_PROTOCOL v5.0 initializing...
+[SYSTEM] Loading user session...
+                        </div>
+                        
+                        <div class="terminal-input">
+                            <div class="input-prefix">$</div>
+                            <input type="text" class="cmd-input" id="commandInput" 
+                                   placeholder="Type command here... (Press Enter to execute)"
+                                   onkeypress="handleCommand(event)">
+                            <button class="term-btn" onclick="executeCommand()">
+                                <i class="fas fa-play"></i> Run
                             </button>
-                            <button class="term-btn" onclick="runDiagnostics()">
-                                <i class="fas fa-stethoscope"></i> Test
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="showModule('ddos')">
+                            <i class="fas fa-bolt"></i>
+                            LAUNCH DDoS ATTACK
+                        </button>
+                        <button class="btn btn-secondary" onclick="showModule('ngl')">
+                            <i class="fas fa-comment-dots"></i>
+                            START NGL SPAM
+                        </button>
+                        <button class="btn btn-danger" onclick="emergencyStop()">
+                            <i class="fas fa-stop-circle"></i>
+                            EMERGENCY STOP
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- DDoS Attack Module -->
+                <div id="ddos" class="module">
+                    <div class="content-header">
+                        <h1 class="content-title">
+                            <i class="fas fa-bolt"></i>
+                            DDoS ATTACK MODULE
+                        </h1>
+                        <p class="content-subtitle">High-performance distributed denial of service attacks</p>
+                    </div>
+                    
+                    <div class="attack-panel">
+                        <div class="panel-grid">
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i class="fas fa-bullseye"></i>
+                                    TARGET IP/DOMAIN
+                                </label>
+                                <input type="text" class="input-field" id="ddosTarget" 
+                                       placeholder="example.com or 192.168.1.1">
+                                <button class="term-btn" onclick="testTarget()" style="margin-top: 10px;">
+                                    <i class="fas fa-vial"></i> Test Connection
+                                </button>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i class="fas fa-plug"></i>
+                                    PORT NUMBER
+                                </label>
+                                <input type="number" class="input-field" id="ddosPort" value="80" min="1" max="65535">
+                            </div>
+                        </div>
+                        
+                        <div class="panel-grid">
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                    ATTACK INTENSITY
+                                </label>
+                                <select class="input-field input-select" id="ddosIntensity">
+                                    <option value="low">LOW (50 RPS) - Stealth Mode</option>
+                                    <option value="med" selected>MEDIUM (200 RPS) - Standard</option>
+                                    <option value="high">HIGH (500 RPS) - Aggressive</option>
+                                    <option value="extreme" id="extremeOption">EXTREME (1000+ RPS) - Maximum Power</option>
+                                </select>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i class="fas fa-clock"></i>
+                                    DURATION (Seconds)
+                                </label>
+                                <input type="number" class="input-field" id="ddosDuration" value="60" min="0">
+                                <small style="color: var(--text-dim); display: block; margin-top: 5px;">
+                                    0 = Unlimited (Manual stop required)
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label class="input-label">
+                                <i class="fas fa-cogs"></i>
+                                ADVANCED OPTIONS
+                            </label>
+                            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                                <label style="color: var(--text-dim);">
+                                    <input type="checkbox" id="randomizeIP" checked> Randomize Source IPs
+                                </label>
+                                <label style="color: var(--text-dim);">
+                                    <input type="checkbox" id="useProxies" id="proxyCheckbox"> Use Proxy Rotation
+                                </label>
+                                <label style="color: var(--text-dim);">
+                                    <input type="checkbox" id="sslMode" id="sslCheckbox"> SSL/TLS Attack Mode
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="startDDoSAttack()">
+                            <i class="fas fa-rocket"></i>
+                            LAUNCH ATTACK
+                        </button>
+                        <button class="btn btn-danger" onclick="stopDDoSAttack()">
+                            <i class="fas fa-stop"></i>
+                            STOP ATTACK
+                        </button>
+                        <button class="btn btn-secondary" onclick="quickTest()">
+                            <i class="fas fa-vial"></i>
+                            QUICK TEST
+                        </button>
+                    </div>
+                    
+                    <div class="command-terminal" style="margin-top: 30px;">
+                        <div class="terminal-header">
+                            <div class="terminal-title">
+                                <i class="fas fa-wave-square"></i>
+                                ATTACK MONITOR
+                            </div>
+                            <div class="terminal-controls">
+                                <button class="term-btn" onclick="clearAttackLog()">
+                                    <i class="fas fa-trash"></i> Clear Log
+                                </button>
+                            </div>
+                        </div>
+                        <div class="terminal-output" id="ddosTerminal">
+[DDoS] Module initialized
+[STATUS] Ready for attack configuration
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- NGL Spam Module -->
+                <div id="ngl" class="module">
+                    <div class="content-header">
+                        <h1 class="content-title">
+                            <i class="fas fa-comment-dots"></i>
+                            NGL SPAM MODULE
+                        </h1>
+                        <p class="content-subtitle">Advanced message spamming system</p>
+                    </div>
+                    
+                    <div class="attack-panel">
+                        <div class="panel-grid">
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i class="fas fa-link"></i>
+                                    NGL LINK OR USERNAME
+                                </label>
+                                <input type="text" class="input-field" id="nglTarget" 
+                                       placeholder="ngl.link/username or just username">
+                                <button class="term-btn" onclick="testNGLTarget()" style="margin-top: 10px;">
+                                    <i class="fas fa-vial"></i> Test Connection
+                                </button>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i class="fas fa-envelope"></i>
+                                    MESSAGE TO SEND
+                                </label>
+                                <textarea class="input-field textarea-field" id="nglMessage" rows="3" placeholder="Type your message here..."></textarea>
+                                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                    <button class="term-btn" onclick="useTemplate(1)">Template 1</button>
+                                    <button class="term-btn" onclick="useTemplate(2)">Template 2</button>
+                                    <button class="term-btn" onclick="useTemplate(3)">Template 3</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="panel-grid">
+                            <div class="input-group">
+                                          <label class="input-label">
+                                    <i class="fas fa-hashtag"></i>
+                                    NUMBER OF MESSAGES
+                                </label>
+                                <input type="number" class="input-field" id="nglCount" value="20" min="1" max="1000">
+                                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                                    <button class="term-btn" onclick="setCount(10)">10</button>
+                                    <button class="term-btn" onclick="setCount(50)">50</button>
+                                    <button class="term-btn" onclick="setCount(100)">100</button>
+                                </div>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i class="fas fa-clock"></i>
+                                    DELAY BETWEEN MESSAGES (ms)
+                                </label>
+                                <input type="number" class="input-field" id="nglDelay" value="2000" min="1000" max="10000">
+                                <small style="color: var(--text-dim); display: block; margin-top: 5px;">
+                                    Lower delay = faster but higher chance of blocking
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="input-group">
+                            <label class="input-label">
+                                <i class="fas fa-cogs"></i>
+                                ADVANCED OPTIONS
+                            </label>
+                            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                                <label style="color: var(--text-dim);">
+                                    <input type="checkbox" id="nglRandomDelay" checked> Random Delay (±500ms)
+                                </label>
+                                <label style="color: var(--text-dim);">
+                                    <input type="checkbox" id="nglRotateMessages"> Rotate Multiple Messages
+                                </label>
+                                <label style="color: var(--text-dim);">
+                                    <input type="checkbox" id="nglAutoRetry" checked> Auto Retry Failed
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="startNGLSpam()">
+                            <i class="fas fa-paper-plane"></i>
+                            START SPAM
+                        </button>
+                        <button class="btn btn-danger" onclick="stopNGLSpam()">
+                            <i class="fas fa-stop"></i>
+                            STOP SPAM
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearNGLForm()">
+                            <i class="fas fa-trash"></i>
+                            CLEAR FORM
+                        </button>
+                    </div>
+                    
+                    <div class="command-terminal" style="margin-top: 30px;">
+                        <div class="terminal-header">
+                            <div class="terminal-title">
+                                <i class="fas fa-chart-line"></i>
+                                SPAM MONITOR
+                            </div>
+                            <div class="terminal-controls">
+                                <button class="term-btn" onclick="clearNGLLog()">
+                                    <i class="fas fa-trash"></i> Clear Log
+                                </button>
+                                <button class="term-btn" onclick="exportNGLStats()">
+                                    <i class="fas fa-download"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                        <div class="terminal-output" id="nglTerminal">
+[NGL] Module initialized
+[STATUS] Ready for configuration
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-top: 20px;">
+                            <div style="background: rgba(0, 40, 0, 0.7); padding: 15px; border-radius: 8px; text-align: center;">
+                                <div style="color: var(--text-dim); font-size: 0.9rem;">SENT</div>
+                                <div id="nglSentCount" style="color: var(--primary); font-size: 1.5rem; font-weight: bold;">0</div>
+                            </div>
+                            <div style="background: rgba(0, 40, 0, 0.7); padding: 15px; border-radius: 8px; text-align: center;">
+                                <div style="color: var(--text-dim); font-size: 0.9rem;">FAILED</div>
+                                <div id="nglFailedCount" style="color: var(--accent); font-size: 1.5rem; font-weight: bold;">0</div>
+                            </div>
+                            <div style="background: rgba(0, 40, 0, 0.7); padding: 15px; border-radius: 8px; text-align: center;">
+                                <div style="color: var(--text-dim); font-size: 0.9rem;">SUCCESS RATE</div>
+                                <div id="nglSuccessRate" style="color: var(--primary); font-size: 1.5rem; font-weight: bold;">0%</div>
+                            </div>
+                            <div style="background: rgba(0, 40, 0, 0.7); padding: 15px; border-radius: 8px; text-align: center;">
+                                <div style="color: var(--text-dim); font-size: 0.9rem;">TIME ELAPSED</div>
+                                <div id="nglTimeElapsed" style="color: var(--primary); font-size: 1.5rem; font-weight: bold;">0s</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Developer Panel Module -->
+                <div id="devpanel" class="module">
+                    <div class="content-header">
+                        <h1 class="content-title">
+                            <i class="fas fa-user-shield"></i>
+                            DEVELOPER PANEL
+                        </h1>
+                        <p class="content-subtitle">Account Management System</p>
+                    </div>
+                    
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">TOTAL ACCOUNTS</div>
+                                    <div class="stat-value" id="totalAccounts">0</div>
+                                </div>
+                                <i class="fas fa-users stat-icon"></i>
+                            </div>
+                            <div class="stat-trend trend-up">
+                                <i class="fas fa-sync-alt"></i> Live count
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">ACTIVE SESSIONS</div>
+                                    <div class="stat-value" id="activeSessions">1</div>
+                                </div>
+                                <i class="fas fa-user-clock stat-icon"></i>
+                            </div>
+                            <div class="stat-trend trend-up">
+                                <i class="fas fa-user-check"></i> You are online
+                            </div>
+                        </div>
+                        
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-title">EXPIRED ACCOUNTS</div>
+                                    <div class="stat-value" id="expiredAccounts">0</div>
+                                </div>
+                                <i class="fas fa-user-times stat-icon"></i>
+                            </div>
+                            <div class="stat-trend trend-down">
+                                <i class="fas fa-exclamation-circle"></i> Needs cleanup
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Create Account Panel -->
+                    <div class="attack-panel">
+                        <h3 style="color: var(--primary); margin-bottom: 20px;">
+                            <i class="fas fa-user-plus"></i> CREATE NEW ACCOUNT
+                        </h3>
+                        
+                        <div class="panel-grid">
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i class="fas fa-user"></i>
+                                    USERNAME
+                                </label>
+                                <input type="text" class="input-field" id="newUsername" 
+                                       placeholder="Enter username (no spaces)">
+                            </div>
+                            
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i class="fas fa-key"></i>
+                                    PASSWORD
+                                </label>
+                                <input type="text" class="input-field" id="newPassword" 
+                                       placeholder="Auto-generate or type custom">
+                                <button class="term-btn" onclick="generatePassword()" 
+                                        style="margin-top: 10px;">
+                                    <i class="fas fa-random"></i> Generate Password
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="panel-grid">
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i class="fas fa-user-tag"></i>
+                                    ACCOUNT TYPE
+                                </label>
+                                <select class="input-field input-select" id="accountType">
+                                    <option value="guest">GUEST - Basic features only</option>
+                                    <option value="special">SPECIAL - Advanced features</option>
+                                    <option value="developer">DEVELOPER - Full access</option>
+                                </select>
+                            </div>
+                            
+                            <div class="input-group">
+                                <label class="input-label">
+                                    <i class="fas fa-clock"></i>
+                                    EXPIRY TIME
+                                </label>
+                                <div style="display: flex; gap: 10px;">
+                                    <input type="number" class="input-field" id="expiryValue" 
+                                           value="1" min="1" style="flex: 1;">
+                                    <select class="input-field input-select" id="expiryUnit" style="flex: 1;">
+                                        <option value="minutes">Minutes</option>
+                                        <option value="hours" selected>Hours</option>
+                                        <option value="days">Days</option>
+                                    </select>
+                                </div>
+                                <small style="color: var(--text-dim); display: block; margin-top: 5px;">
+                                    Set 0 for never expires (Developer only)
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="btn-group">
+                            <button class="btn btn-primary" onclick="createAccount()">
+                                <i class="fas fa-user-plus"></i>
+                                CREATE ACCOUNT
+                            </button>
+                            <button class="btn btn-secondary" onclick="clearAccountForm()">
+                                <i class="fas fa-trash"></i>
+                                CLEAR FORM
                             </button>
                         </div>
                     </div>
-
-                    <!-- Tambahkan module baru di system.html -->
-
-<!-- Developer Panel Module -->
-<div id="devpanel" class="module">
-    <div class="content-header">
-        <h1 class="content-title">
-            <i class="fas fa-user-shield"></i>
-            DEVELOPER PANEL
-        </h1>
-        <p class="content-subtitle">Account Management System</p>
-    </div>
-    
-    <div class="stats-grid">
-        <div class="stat-card">
-            <div class="stat-header">
-                <div>
-                    <div class="stat-title">TOTAL ACCOUNTS</div>
-                    <div class="stat-value" id="totalAccounts">0</div>
-                </div>
-                <i class="fas fa-users stat-icon"></i>
-            </div>
-            <div class="stat-trend trend-up">
-                <i class="fas fa-sync-alt"></i> Live count
-            </div>
-        </div>
-        
-        <div class="stat-card">
-            <div class="stat-header">
-                <div>
-                    <div class="stat-title">ACTIVE SESSIONS</div>
-                    <div class="stat-value" id="activeSessions">1</div>
-                </div>
-                <i class="fas fa-user-clock stat-icon"></i>
-            </div>
-            <div class="stat-trend trend-up">
-                <i class="fas fa-user-check"></i> You are online
-            </div>
-        </div>
-        
-        <div class="stat-card">
-            <div class="stat-header">
-                <div>
-                    <div class="stat-title">EXPIRED ACCOUNTS</div>
-                    <div class="stat-value" id="expiredAccounts">0</div>
-                </div>
-                <i class="fas fa-user-times stat-icon"></i>
-            </div>
-            <div class="stat-trend trend-down">
-                <i class="fas fa-exclamation-circle"></i> Needs cleanup
-            </div>
-        </div>
-    </div>
-    
-    <!-- Create Account Panel -->
-    <div class="attack-panel">
-        <h3 style="color: var(--primary); margin-bottom: 20px;">
-            <i class="fas fa-user-plus"></i> CREATE NEW ACCOUNT
-        </h3>
-        
-        <div class="panel-grid">
-            <div class="input-group">
-                <label class="input-label">
-                    <i class="fas fa-user"></i>
-                    USERNAME
-                </label>
-                <input type="text" class="input-field" id="newUsername" 
-                       placeholder="Enter username (no spaces)">
-            </div>
-            
-            <div class="input-group">
-                <label class="input-label">
-                    <i class="fas fa-key"></i>
-                    PASSWORD
-                </label>
-                <input type="text" class="input-field" id="newPassword" 
-                       placeholder="Auto-generate or type custom">
-                <button class="term-btn" onclick="generatePassword()" 
-                        style="margin-top: 10px;">
-                    <i class="fas fa-random"></i> Generate Password
-                </button>
-            </div>
-        </div>
-        
-        <div class="panel-grid">
-            <div class="input-group">
-                <label class="input-label">
-                    <i class="fas fa-user-tag"></i>
-                    ACCOUNT TYPE
-                </label>
-                <select class="input-field input-select" id="accountType">
-                    <option value="guest">GUEST - Basic features only</option>
-                    <option value="special">SPECIAL - Advanced features</option>
-                    <option value="developer">DEVELOPER - Full access</option>
-                </select>
-            </div>
-            
-            <div class="input-group">
-                <label class="input-label">
-                    <i class="fas fa-clock"></i>
-                    EXPIRY TIME
-                </label>
-                <div style="display: flex; gap: 10px;">
-                    <input type="number" class="input-field" id="expiryValue" 
-                           value="1" min="1" style="flex: 1;">
-                    <select class="input-field input-select" id="expiryUnit" style="flex: 1;">
-                        <option value="minutes">Minutes</option>
-                        <option value="hours" selected>Hours</option>
-                        <option value="days">Days</option>
-                    </select>
-                </div>
-                <small style="color: var(--text-dim); display: block; margin-top: 5px;">
-                    Set 0 for never expires (Developer only)
-                </small>
-            </div>
-        </div>
-        
-        <div class="btn-group">
-            <button class="btn btn-primary" onclick="createAccount()">
-                <i class="fas fa-user-plus"></i>
-                CREATE ACCOUNT
-            </button>
-            <button class="btn btn-secondary" onclick="clearAccountForm()">
-                <i class="fas fa-trash"></i>
-                CLEAR FORM
-            </button>
-        </div>
-    </div>
-    
-    <!-- Account List Panel -->
-    <div class="attack-panel" style="margin-top: 30px;">
-        <h3 style="color: var(--primary); margin-bottom: 20px;">
-            <i class="fas fa-list"></i> ACCOUNT LIST
-        </h3>
-        
-        <div class="terminal-output" id="accountsList" style="height: 300px;">
+                    
+                    <!-- Account List Panel -->
+                    <div class="attack-panel" style="margin-top: 30px;">
+                        <h3 style="color: var(--primary); margin-bottom: 20px;">
+                            <i class="fas fa-list"></i> ACCOUNT LIST
+                        </h3>
+                        
+                        <div class="terminal-output" id="accountsList" style="height: 300px;">
 [SYSTEM] Loading accounts...
-        </div>
-        
-        <div class="btn-group" style="margin-top: 20px;">
-            <button class="btn btn-secondary" onclick="refreshAccounts()">
-                <i class="fas fa-sync-alt"></i>
-                REFRESH LIST
-            </button>
-            <button class="btn btn-danger" onclick="deleteSelectedAccount()">
-                <i class="fas fa-user-minus"></i>
-                DELETE SELECTED
-            </button>
-        </div>
-        
-        <div class="input-group" style="margin-top: 20px;">
-            <label class="input-label">
-                <i class="fas fa-search"></i>
-                SEARCH ACCOUNT
-            </label>
-            <input type="text" class="input-field" id="searchAccount" 
-                   placeholder="Search by username..." 
-                   onkeyup="filterAccounts()">
-        </div>
-    </div>
-</div>
-                    
-                    <div class="terminal-output" id="mainTerminal">
-[SYSTEM] OXYLUS_PROTOCOL v4.0 initialized
-[AUTH] Session validated successfully
-[STATUS] All modules loaded and ready
-[INFO] Type commands below or use GUI controls
-[INFO] Session ID: <span id="sessionIdDisplay">loading...</span>
-
-Available commands:
-• ddos.attack(target, port, intensity, duration)
-• ngl.spam(username, message, count, delay)
-• scanner.analyze(target)
-• multi.attack(targets, intensity)
-• scheduler.create(type, target, time)
-• system.status()
-• system.stopAll()
-                    </div>
-                    
-                    <div class="terminal-input">
-                        <div class="input-prefix">$</div>
-                        <input type="text" class="cmd-input" id="commandInput" 
-                               placeholder="Type command here... (Press Enter to execute)"
-                               onkeypress="handleCommand(event)">
-                    </div>
-                </div>
-                
-                <div class="btn-group">
-                    <button class="btn btn-primary" onclick="quickAttack()">
-                        <i class="fas fa-play"></i>
-                        QUICK ATTACK
-                    </button>
-                    <button class="btn btn-secondary" onclick="scanNetwork()">
-                        <i class="fas fa-network-wired"></i>
-                        NETWORK SCAN
-                    </button>
-                    <button class="btn btn-danger" onclick="emergencyStop()">
-                        <i class="fas fa-stop-circle"></i>
-                        EMERGENCY STOP
-                    </button>
-                </div>
-            </div>
-            
-            <!-- DDoS Attack Module -->
-            <div id="ddos" class="module">
-                <div class="content-header">
-                    <h1 class="content-title">
-                        <i class="fas fa-bolt"></i>
-                        DDoS ATTACK MODULE
-                    </h1>
-                    <p class="content-subtitle">High-performance distributed denial of service attacks</p>
-                </div>
-                
-                <div class="attack-panel">
-                    <div class="panel-grid">
-                        <div class="input-group">
-                            <label class="input-label">
-                                <i class="fas fa-bullseye"></i>
-                                TARGET IP/DOMAIN
-                            </label>
-                            <input type="text" class="input-field" id="ddosTarget" 
-                                   placeholder="example.com or 192.168.1.1">
                         </div>
                         
-                        <div class="input-group">
-                            <label class="input-label">
-                                <i class="fas fa-plug"></i>
-                                PORT NUMBER
-                            </label>
-                            <input type="number" class="input-field" id="ddosPort" value="80" min="1" max="65535">
-                        </div>
-                    </div>
-                    
-                    <div class="panel-grid">
-                        <div class="input-group">
-                            <label class="input-label">
-                                <i class="fas fa-tachometer-alt"></i>
-                                ATTACK INTENSITY
-                            </label>
-                            <select class="input-field input-select" id="ddosIntensity">
-                                <option value="low">LOW (50 RPS) - Stealth Mode</option>
-                                <option value="med" selected>MEDIUM (200 RPS) - Standard</option>
-                                <option value="high">HIGH (500 RPS) - Aggressive</option>
-                                <option value="extreme">EXTREME (1000+ RPS) - Maximum Power</option>
-                            </select>
-                        </div>
-                        
-                        <div class="input-group">
-                            <label class="input-label">
-                                <i class="fas fa-clock"></i>
-                                DURATION (Seconds)
-                            </label>
-                            <input type="number" class="input-field" id="ddosDuration" value="60" min="0">
-                            <small style="color: var(--text-dim); display: block; margin-top: 5px;">
-                                0 = Unlimited (Manual stop required)
-                            </small>
-                        </div>
-                    </div>
-                    
-                    <div class="input-group">
-                        <label class="input-label">
-                            <i class="fas fa-cogs"></i>
-                            ADVANCED OPTIONS
-                        </label>
-                        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                            <label style="color: var(--text-dim);">
-                                <input type="checkbox" id="randomizeIP" checked> Randomize Source IPs
-                            </label>
-                            <label style="color: var(--text-dim);">
-                                <input type="checkbox" id="useProxies"> Use Proxy Rotation
-                            </label>
-                            <label style="color: var(--text-dim);">
-                                <input type="checkbox" id="sslMode"> SSL/TLS Attack Mode
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="btn-group">
-                    <button class="btn btn-primary" onclick="startDDoSAttack()">
-                        <i class="fas fa-rocket"></i>
-                        LAUNCH ATTACK
-                    </button>
-                    <button class="btn btn-danger" onclick="stopDDoSAttack()">
-                        <i class="fas fa-stop"></i>
-                        STOP ATTACK
-                    </button>
-                    <button class="btn btn-secondary" onclick="testDDoSTarget()">
-                        <i class="fas fa-vial"></i>
-                        TEST CONNECTION
-                    </button>
-                </div>
-                
-                <div class="command-terminal" style="margin-top: 30px;">
-                    <div class="terminal-header">
-                        <div class="terminal-title">
-                            <i class="fas fa-wave-square"></i>
-                            ATTACK MONITOR
-                        </div>
-                        <div class="terminal-controls">
-                            <button class="term-btn" onclick="clearAttackLog()">
-                                <i class="fas fa-trash"></i> Clear Log
+                        <div class="btn-group" style="margin-top: 20px;">
+                            <button class="btn btn-secondary" onclick="refreshAccounts()">
+                                <i class="fas fa-sync-alt"></i>
+                                REFRESH LIST
+                            </button>
+                            <button class="btn btn-danger" onclick="deleteSelectedAccount()">
+                                <i class="fas fa-user-minus"></i>
+                                DELETE SELECTED
                             </button>
                         </div>
+                        
+                        <div class="input-group" style="margin-top: 20px;">
+                            <label class="input-label">
+                                <i class="fas fa-search"></i>
+                                SEARCH ACCOUNT
+                            </label>
+                            <input type="text" class="input-field" id="searchAccount" 
+                                   placeholder="Search by username..." 
+                                   onkeyup="filterAccounts()">
+                        </div>
                     </div>
-                    <div class="terminal-output" id="ddosTerminal">
-[DDoS] Module ready for commands
-[STATUS] No active attacks
-[INFO] Configure parameters and launch attack
-                    </div>
-                </div>
-            </div>
-            
-            <!-- NGL Spam Module -->
-            <div id="ngl" class="module">
-                <div class="content-header">
-                    <h1 class="content-title">
-                        <i class="fas fa-comment-dots"></i>
-                        NGL SPAM MODULE
-                    </h1>
-                    <p class="content-subtitle">Automated message sending to NGL links</p>
                 </div>
                 
-                <!-- NGL Module content would go here -->
-                <div style="text-align: center; padding: 50px; color: var(--text-dim);">
-                    <i class="fas fa-cogs" style="font-size: 3rem; margin-bottom: 20px;"></i>
-                    <h3>NGL SPAM MODULE LOADING...</h3>
-                    <p>Module configuration in progress</p>
+                <!-- Other modules would go here -->
+                <div id="scanner" class="module">
+                    <!-- Scanner module content -->
                 </div>
+                
+                <div id="multi" class="module">
+                    <!-- Multi-target module content -->
+                </div>
+                
+                <div id="scheduler" class="module">
+                    <!-- Scheduler module content -->
+                </div>
+                
+                <div id="logs" class="module">
+                    <!-- Logs module content -->
+                </div>
+                
+                <div id="help" class="module">
+                    <!-- Help module content -->
+                </div>
+                
+            </main>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="system-footer">
+            <div class="footer-item">
+                <i class="fas fa-server"></i>
+                SERVER: <span class="footer-value" id="serverStatus">CONNECTED</span>
             </div>
-            
-            <!-- Add other modules similarly -->
-            
-        </main>
+            <div class="footer-item">
+                <i class="fas fa-microchip"></i>
+                CPU: <span class="footer-value" id="cpuUsage">--%</span>
+            </div>
+            <div class="footer-item">
+                <i class="fas fa-memory"></i>
+                MEMORY: <span class="footer-value" id="memoryUsage">-- MB</span>
+            </div>
+            <div class="footer-item">
+                <i class="fas fa-wifi"></i>
+                NETWORK: <span class="footer-value"
+                             id="networkStatus">ACTIVE</span>
+            </div>
+            <div class="footer-item">
+                <i class="fas fa-clock"></i>
+                TIME: <span class="footer-value" id="currentTime">--:--:--</span>
+            </div>
+        </footer>
     </div>
-    
-    <!-- Footer -->
-    <footer class="system-footer">
-        <div class="footer-item">
-            <i class="fas fa-server"></i>
-            SERVER: <span class="footer-value" id="serverStatus">CONNECTED</span>
-        </div>
-        <div class="footer-item">
-            <i class="fas fa-microchip"></i>
-            CPU: <span class="footer-value" id="cpuUsage">12%</span>
-        </div>
-        <div class="footer-item">
-            <i class="fas fa-memory"></i>
-            MEMORY: <span class="footer-value" id="memoryUsage">-- MB</span>
-        </div>
-        <div class="footer-item">
-            <i class="fas fa-wifi"></i>
-            NETWORK: <span class="footer-value" id="networkStatus">ACTIVE</span>
-        </div>
-        <div class="footer-item">
-            <i class="fas fa-clock"></i>
-            TIME: <span class="footer-value" id="currentTime">--:--:--</span>
-        </div>
-    </footer>
     
     <script>
-        // Session Manager
-        class SessionManager {
-            constructor() {
-                this.sessionId = null;
-                this.sessionStart = null;
-                this.maxSessionHours = 12;
-                this.timerInterval = null;
-            }
+        // ==================== SESSION MANAGEMENT ====================
+        const SESSION_MANAGER = {
+            currentUser: null,
+            sessionExpiry: null,
+            timerInterval: null,
             
-            validate() {
+            init() {
+                // Check existing session
                 const session = localStorage.getItem('oxylus_session');
-                const sessionTime = localStorage.getItem('oxylus_session_time');
-                
-                if(!session || !sessionTime) {
+                if(!session) {
                     this.redirectToLogin();
                     return false;
                 }
                 
-                const now = Date.now();
-                const sessionAge = now - parseInt(sessionTime);
-                const maxAge = this.maxSessionHours * 60 * 60 * 1000;
-                
-                if(sessionAge > maxAge) {
-                    this.clear();
+                try {
+                    const data = JSON.parse(session);
+                    
+                    // Check if session expired
+                    if(data.expiry && data.expiry < Date.now()) {
+                        this.clearSession();
+                        this.redirectToLogin();
+                        return false;
+                    }
+                    
+                    this.currentUser = data.user;
+                    this.sessionExpiry = data.expiry;
+                    
+                    // Start session timer
+                    this.startSessionTimer();
+                    
+                    return true;
+                } catch(e) {
+                    this.clearSession();
                     this.redirectToLogin();
                     return false;
                 }
-                
-                this.sessionId = session;
-                this.sessionStart = parseInt(sessionTime);
-                return true;
-            }
+            },
             
-            startTimer() {
+            startSessionTimer() {
                 this.updateTimer();
                 this.timerInterval = setInterval(() => this.updateTimer(), 60000);
-            }
+            },
             
             updateTimer() {
-                if(!this.sessionStart) return;
+                if(!this.sessionExpiry) {
+                    document.getElementById('sessionTimer').textContent = '∞';
+                    return;
+                }
                 
                 const now = Date.now();
-                const elapsed = now - this.sessionStart;
-                const maxMs = this.maxSessionHours * 60 * 60 * 1000;
-                const remainingMs = maxMs - elapsed;
+                const remainingMs = this.sessionExpiry - now;
                 
                 if(remainingMs <= 0) {
-                    this.clear();
+                    this.clearSession();
                     this.redirectToLogin();
                     return;
                 }
@@ -1278,118 +1476,250 @@ Available commands:
                 
                 document.getElementById('sessionTimer').textContent = 
                     `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
-            }
+            },
             
-            clear() {
+            clearSession() {
                 localStorage.removeItem('oxylus_session');
-                localStorage.removeItem('oxylus_session_time');
-                localStorage.removeItem('oxylus_auth');
+                this.currentUser = null;
+                this.sessionExpiry = null;
                 
                 if(this.timerInterval) {
                     clearInterval(this.timerInterval);
                 }
-                
-                document.cookie = "oxylus_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-            }
+            },
             
             redirectToLogin() {
                 window.location.href = 'index.html';
+            },
+            
+            logout() {
+                this.clearSession();
+                this.redirectToLogin();
+            },
+            
+            getUserType() {
+                return this.currentUser?.type || 'guest';
+            },
+            
+            getUsername() {
+                return this.currentUser?.username || 'unknown';
+            },
+            
+            // Check feature access
+            canAccess(feature) {
+                const userType = this.getUserType();
+                
+                // Developer has all access
+                if(userType === 'developer') return true;
+                
+                // Feature restrictions
+                const restrictions = {
+                    'devpanel': ['developer'],
+                    'extreme_ddos': ['developer', 'special'],
+                    'multi_target': ['developer', 'special'],
+                    'scheduler': ['developer', 'special']
+                };
+                
+                if(!restrictions[feature]) return true;
+                return restrictions[feature].includes(userType);
+            }
+        };
+        
+        // ==================== SYSTEM INITIALIZATION ====================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize session
+            if(!SESSION_MANAGER.init()) {
+                return;
+            }
+            
+            // Load system
+            setTimeout(() => {
+                initializeSystem();
+            }, 1000);
+        });
+        
+        function initializeSystem() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            const mainInterface = document.getElementById('mainInterface');
+            const userType = SESSION_MANAGER.getUserType();
+            const username = SESSION_MANAGER.getUsername();
+            
+            // Update user info
+            document.getElementById('usernameDisplay').textContent = username;
+            document.getElementById('sidebarUsername').textContent = username;
+            document.getElementById('sidebarRole').textContent = `${userType.toUpperCase()} ACCOUNT`;
+            document.getElementById('userTypeDisplay').textContent = `${userType.toUpperCase()} MODE`;
+            document.getElementById('accountTypeValue').textContent = userType.toUpperCase();
+            document.getElementById('dashboardSubtitle').textContent = `Welcome ${userType.toUpperCase()} user: ${username}`;
+            
+            // Set avatar color based on user type
+            const avatar = document.getElementById('userAvatar');
+            const colors = {
+                developer: '#00ff00',
+                special: '#ff9900',
+                guest: '#00aaff'
+            };
+            avatar.style.background = `linear-gradient(135deg, ${colors[userType] || '#00ff00'}, ${colors[userType] || '#00cc00'})`;
+            
+            // Apply feature restrictions
+            applyFeatureRestrictions(userType);
+            
+            // Hide loading, show interface
+            loadingScreen.style.display = 'none';
+            mainInterface.style.display = 'block';
+            
+            // Initialize system functions
+            startSystemFunctions();
+            
+            // Update terminal
+            const terminal = document.getElementById('mainTerminal');
+            terminal.innerHTML += `\n[SYSTEM] Session validated for ${userType} user: ${username}`;
+            terminal.innerHTML += `\n[SYSTEM] Feature restrictions applied`;
+            terminal.innerHTML += `\n[SYSTEM] System ready for operations`;
+            terminal.scrollTop = terminal.scrollHeight;
+            
+            // Load developer panel if applicable
+            if(userType === 'developer') {
+                refreshAccounts();
             }
         }
         
-        // System Manager
-        class SystemManager {
-            constructor() {
-                this.modules = {};
-                this.activeModule = 'dashboard';
-                this.terminalHistory = [];
-                this.commands = {};
+        function applyFeatureRestrictions(userType) {
+            // Hide/show features based on user type
+            if(userType === 'guest') {
+                // Hide advanced features
+                document.getElementById('devpanelNavItem').style.display = 'none';
+                document.getElementById('multiNavItem').style.display = 'none';
+                document.getElementById('schedulerNavItem').style.display = 'none';
+                
+                // Remove extreme DDoS option
+                const extremeOption = document.getElementById('extremeOption');
+                if(extremeOption) extremeOption.remove();
+                
+                // Disable advanced options
+                document.getElementById('proxyCheckbox').disabled = true;
+                document.getElementById('sslCheckbox').disabled = true;
+                
+                // Update permission level
+                document.getElementById('permissionLevel').textContent = 'BASIC';
+                
+            } else if(userType === 'special') {
+                // Hide dev panel only
+                document.getElementById('devpanelNavItem').style.display = 'none';
+                
+                // Update permission level
+                document.getElementById('permissionLevel').textContent = 'ADVANCED';
+                
+            } else if(userType === 'developer') {
+                // Show all features
+                document.getElementById('permissionLevel').textContent = 'FULL';
             }
+        }
+        
+        function startSystemFunctions() {
+            // Update time
+            updateTime();
+            setInterval(updateTime, 1000);
             
-            showModule(moduleId) {
-                // Hide all modules
-                document.querySelectorAll('.module').forEach(m => {
-                    m.classList.remove('active');
-                });
+            // Update system uptime
+            startUptimeCounter();
+            
+            // Update system metrics
+            setInterval(updateSystemMetrics, 3000);
+            updateSystemMetrics();
+            
+            // Auto-focus on command input
+            document.getElementById('commandInput')?.focus();
+        }
+        
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString();
+            document.getElementById('currentTime').textContent = timeStr;
+        }
+        
+        function startUptimeCounter() {
+            const startTime = Date.now();
+            setInterval(() => {
+                const elapsed = Math.floor((Date.now() - startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+                document.getElementById('systemUptime').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+        
+        function updateSystemMetrics() {
+            // Simulate CPU usage
+            const cpu = Math.floor(Math.random() * 30) + 10;
+            document.getElementById('cpuUsage').textContent = `${cpu}%`;
+            
+            // Real memory usage
+          if(performance.memory) {
+                const used = Math.round(performance.memory.usedJSHeapSize / 1048576);
+                document.getElementById('memoryUsage').textContent = `${used} MB`;
+            }
+        }
+        
+        // ==================== MODULE MANAGEMENT ====================
+        function showModule(moduleId) {
+            // Hide all modules
+            document.querySelectorAll('.module').forEach(m => {
+                m.classList.remove('active');
+            });
+            
+            // Deactivate all nav items
+            document.querySelectorAll('.nav-item').forEach(nav => {
+                nav.classList.remove('active');
+            });
+            
+            // Show selected module
+            const module = document.getElementById(moduleId);
+            if(module) {
+                module.classList.add('active');
                 
-                // Deactivate all nav items
-                document.querySelectorAll('.nav-item').forEach(nav => {
-                    nav.classList.remove('active');
-                });
-                
-                // Show selected module
-                document.getElementById(moduleId).classList.add('active');
-                
-                // Activate corresponding nav
+                // Activate corresponding nav item
                 document.querySelectorAll('.nav-item').forEach(nav => {
                     if(nav.onclick && nav.onclick.toString().includes(moduleId)) {
                         nav.classList.add('active');
                     }
                 });
                 
-                this.activeModule = moduleId;
-                this.log(`Switched to ${moduleId.toUpperCase()} module`);
+                // Log to terminal
+                logToTerminal(`Switched to ${moduleId.toUpperCase()} module`);
             }
-            
-            log(message, module = 'SYSTEM') {
+        }
+        
+        // ==================== TERMINAL FUNCTIONS ====================
+        function logToTerminal(message, module = 'SYSTEM') {
+            const terminal = document.getElementById('mainTerminal');
+            if(terminal) {
                 const timestamp = new Date().toLocaleTimeString();
-                const logEntry = `[${timestamp}] [${module}] ${message}`;
-                
-                // Add to terminal
-                const terminal = document.getElementById('mainTerminal');
-                if(terminal) {
-                    terminal.innerHTML += '\n' + logEntry;
-                    terminal.scrollTop = terminal.scrollHeight;
-                }
-                
-                // Add to history
-                this.terminalHistory.push(logEntry);
-                if(this.terminalHistory.length > 100) {
-                    this.terminalHistory.shift();
-                }
-                
-                console.log(logEntry);
+                terminal.innerHTML += `\n[${timestamp}] [${module}] ${message}`;
+                terminal.scrollTop = terminal.scrollHeight;
             }
-            
-            clearTerminal() {
-                const terminal = document.getElementById('mainTerminal');
-                if(terminal) {
-                    terminal.innerHTML = '[SYSTEM] Terminal cleared';
-                    this.terminalHistory = [];
-                }
+        }
+        
+        function clearTerminal() {
+            const terminal = document.getElementById('mainTerminal');
+            if(terminal) {
+                terminal.innerHTML = '[SYSTEM] Terminal cleared';
             }
-            
-            handleCommand(command) {
-                if(!command.trim()) return;
-                
-                this.log(`> ${command}`, 'CMD');
-                
-                // Process command
-                const parts = command.toLowerCase().split(' ');
-                const cmd = parts[0];
-                const args = parts.slice(1);
-                
-                switch(cmd) {
-                    case 'help':
-                        this.showHelp();
-                        break;
-                    case 'clear':
-                        this.clearTerminal();
-                        break;
-                    case 'status':
-                        this.showStatus();
-                        break;
-                    case 'test':
-                        this.runTest();
-                        break;
-                    default:
-                        this.log(`Unknown command: ${cmd}`, 'ERROR');
-                        this.log('Type "help" for available commands', 'INFO');
-                }
-            }
-            
-            showHelp() {
-                const helpText = `
+        }
+        
+        function runDiagnostics() {
+            logToTerminal('Running system diagnostics...', 'TEST');
+            setTimeout(() => {
+                logToTerminal('✓ Network connectivity', 'TEST');
+                logToTerminal('✓ JavaScript engine', 'TEST');
+                logToTerminal('✓ Web Workers available', 'TEST');
+                logToTerminal('✓ System integrity check passed', 'TEST');
+                logToTerminal('All systems operational', 'TEST');
+            }, 100);
+        }
+        
+        function showCommands() {
+            const commands = `
 Available commands:
 • help - Show this help
 • clear - Clear terminal
@@ -1400,102 +1730,90 @@ Available commands:
 • scan [target] - Scan target
 • stop - Stop all operations
 
-Use GUI for full functionality.
-                `;
-                this.log(helpText, 'HELP');
-            }
-            
-            showStatus() {
-                const status = `
-System Status:
-• Session: Active
-• Modules: Loaded
-• Memory: ${(performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : 0)} MB
-• Uptime: ${Math.round((Date.now() - sessionManager.sessionStart) / 1000)}s
-• User: ADMIN
-                `;
-                this.log(status, 'STATUS');
-            }
-            
-            runTest() {
-                this.log('Running system diagnostics...', 'TEST');
-                setTimeout(() => {
-                    this.log('✓ Network connectivity', 'TEST');
-                    this.log('✓ JavaScript engine', 'TEST');
-                    this.log('✓ Web Workers available', 'TEST');
-                    this.log('✓ System integrity check passed', 'TEST');
-                    this.log('All systems operational', 'TEST');
-                }, 100);
-            }
-        }
-        
-        // Initialize managers
-        const sessionManager = new SessionManager();
-        const systemManager = new SystemManager();
-        
-        // System functions
-        function updateSystemMetrics() {
-            // Update time
-            const now = new Date();
-            document.getElementById('currentTime').textContent = now.toLocaleTimeString();
-            
-            // Update memory
-            if(performance.memory) {
-                const used = Math.round(performance.memory.usedJSHeapSize / 1048576);
-                document.getElementById('memoryUsage').textContent = `${used} MB`;
-            }
-            
-            // Update CPU (simulated)
-            const cpu = Math.floor(Math.random() * 20) + 10;
-            document.getElementById('cpuUsage').textContent = `${cpu}%`;
-        }
-        
-        function showModule(moduleId) {
-            systemManager.showModule(moduleId);
-        }
-        
-        function clearTerminal() {
-            systemManager.clearTerminal();
-        }
-        
-        function runDiagnostics() {
-            systemManager.runTest();
+Use GUI for full functionality.`;
+            logToTerminal(commands, 'HELP');
         }
         
         function handleCommand(event) {
             if(event.key === 'Enter') {
-                const input = document.getElementById('commandInput');
-                const command = input.value.trim();
-                
-                if(command) {
-                    systemManager.handleCommand(command);
-                    input.value = '';
+                executeCommand();
+            }
+        }
+        
+        function executeCommand() {
+            const input = document.getElementById('commandInput');
+            const command = input.value.trim();
+            
+            if(!command) return;
+            
+            logToTerminal(`> ${command}`, 'CMD');
+            
+            // Process command
+            const parts = command.toLowerCase().split(' ');
+            const cmd = parts[0];
+            const args = parts.slice(1);
+            
+            switch(cmd) {
+                case 'help':
+                    showCommands();
+                    break;
+                case 'clear':
+                    clearTerminal();
+                    break;
+                case 'status':
+                    showStatus();
+                    break;
+                case 'test':
+                    runDiagnostics();
+                    break;
+                case 'modules':
+                    listModules();
+                    break;
+                case 'attack':
+                    if(args[0]) {
+                        startQuickAttack(args[0]);
+                    } else {
+                        logToTerminal('Usage: attack [target]', 'ERROR');
+                    }
+                    break;
+                case 'stop':
+                    emergencyStop();
+                    break;
+                default:
+                    logToTerminal(`Unknown command: ${cmd}`, 'ERROR');
+                    logToTerminal('Type "help" for available commands', 'INFO');
+            }
+            
+            input.value = '';
+        }
+        
+        function showStatus() {
+            const userType = SESSION_MANAGER.getUserType();
+            const status = `
+System Status:
+• User: ${SESSION_MANAGER.getUsername()}
+• Type: ${userType.toUpperCase()}
+• Session: Active
+• Features: ${userType === 'developer' ? 'Full' : userType === 'special' ? 'Advanced' : 'Basic'}
+• Uptime: ${document.getElementById('systemUptime').textContent}
+• Memory: ${document.getElementById('memoryUsage').textContent}
+            `;
+            logToTerminal(status, 'STATUS');
+        }
+        
+        function listModules() {
+            const modules = [];
+            document.querySelectorAll('.nav-item').forEach(nav => {
+                if(nav.style.display !== 'none') {
+                    const text = nav.querySelector('.nav-text').textContent;
+                    modules.push(text);
                 }
-                
-                event.preventDefault();
-            }
+            });
+            
+            logToTerminal(`Available modules: ${modules.join(', ')}`, 'INFO');
         }
         
-        function quickAttack() {
-            systemManager.log('Initializing quick attack sequence...', 'ATTACK');
-            systemManager.showModule('ddos');
-        }
-        
-        function scanNetwork() {
-            systemManager.log('Starting network scan...', 'SCAN');
-            // Network scan implementation would go here
-        }
-        
-        function emergencyStop() {
-            if(confirm('EMERGENCY STOP\n\nAre you sure you want to stop ALL operations?')) {
-                systemManager.log('Emergency stop initiated!', 'ALERT');
-                // Stop all attacks
-                // Clear all intervals
-                // Reset system
-            }
-        }
-        
-        // DDoS functions
+        // ==================== DDoS FUNCTIONS ====================
         function startDDoSAttack() {
             const target = document.getElementById('ddosTarget').value;
             const port = document.getElementById('ddosPort').value;
@@ -1504,6 +1822,12 @@ System Status:
             
             if(!target) {
                 alert('Please enter a target IP or domain');
+                return;
+            }
+            
+            // Check permission for extreme intensity
+            if(intensity === 'extreme' && !SESSION_MANAGER.canAccess('extreme_ddos')) {
+                alert('Extreme intensity is only available for Developer and Special accounts');
                 return;
             }
             
@@ -1516,7 +1840,7 @@ System Status:
             
             document.getElementById('activeAttacks').textContent = '1';
             
-            systemManager.log(`DDoS attack started on ${target}`, 'ATTACK');
+            logToTerminal(`DDoS attack started on ${target}:${port}`, 'ATTACK');
         }
         
         function stopDDoSAttack() {
@@ -1526,10 +1850,10 @@ System Status:
             
             document.getElementById('activeAttacks').textContent = '0';
             
-            systemManager.log('DDoS attack stopped', 'ATTACK');
+            logToTerminal('DDoS attack stopped', 'ATTACK');
         }
         
-        function testDDoSTarget() {
+        function testTarget() {
             const target = document.getElementById('ddosTarget').value;
             if(!target) {
                 alert('Please enter a target first');
@@ -1547,50 +1871,409 @@ System Status:
             }, 1000);
         }
         
+        function quickTest() {
+            const targets = ['192.168.1.1', 'example.com', 'testserver.local'];
+            const target = targets[Math.floor(Math.random() * targets.length)];
+            document.getElementById('ddosTarget').value = target;
+            document.getElementById('ddosPort').value = '80';
+            document.getElementById('ddosIntensity').value = 'med';
+            document.getElementById('ddosDuration').value = '30';
+            
+            logToTerminal(`Quick test configured for ${target}`, 'TEST');
+        }
+        
         function clearAttackLog() {
             document.getElementById('ddosTerminal').innerHTML = '[DDoS] Log cleared';
         }
         
-        function logout() {
-            if(confirm('Are you sure you want to logout?')) {
-                sessionManager.clear();
-                sessionManager.redirectToLogin();
-            }
+        function startQuickAttack(target) {
+            document.getElementById('ddosTarget').value = target;
+            document.getElementById('ddosPort').value = '80';
+            document.getElementById('ddosIntensity').value = 'med';
+            document.getElementById('ddosDuration').value = '60';
+            
+            showModule('ddos');
+            logToTerminal(`Quick attack configured for ${target}`, 'ATTACK');
         }
         
-        // Initialize system
-        document.addEventListener('DOMContentLoaded', function() {
-            // Validate session
-            if(!sessionManager.validate()) {
+        // ==================== NGL SPAM FUNCTIONS ====================
+        let nglStats = { sent: 0, failed: 0, startTime: null };
+        let nglActive = false;
+        
+        function startNGLSpam() {
+            const target = document.getElementById('nglTarget').value;
+            const message = document.getElementById('nglMessage').value;
+            const count = parseInt(document.getElementById('nglCount').value) || 20;
+            const delay = parseInt(document.getElementById('nglDelay').value) || 2000;
+            
+            if(!target || !message) {
+                alert('Please enter target and message');
                 return;
             }
             
-            // Display session ID
-            document.getElementById('sessionIdDisplay').textContent = 
-                sessionManager.sessionId.substring(0, 12) + '...';
+            nglActive = true;
+            nglStats = { sent: 0, failed: 0, startTime: Date.now() };
             
-            // Start session timer
-            sessionManager.startTimer();
+            updateNGLStats();
             
-            // Initialize system manager
-            systemManager.log('System initialized successfully');
-            systemManager.log(`Session: ${sessionManager.sessionId.substring(0, 8)}...`);
-            systemManager.log('All modules ready for operation');
+            const terminal = document.getElementById('nglTerminal');
+            terminal.innerHTML += `\n[NGL] 🚀 Starting spam on ${target}`;
+            terminal.innerHTML += `\n[NGL] Message: "${message.substring(0, 50)}${message.length > 50 ? '...' : ''}"`;
+            terminal.innerHTML += `\n[NGL] Count: ${count} messages`;
+            terminal.scrollTop = terminal.scrollHeight;
             
-            // Start system metrics updates
-            setInterval(updateSystemMetrics, 1000);
-            updateSystemMetrics();
+            // Simulate spam process
+            simulateNGLSpam(target, message, count, delay);
             
-            // Auto-focus on command input
-            document.getElementById('commandInput')?.focus();
+            logToTerminal(`NGL spam started on ${target}`, 'NGL');
+        }
+        
+        function simulateNGLSpam(target, message, count, delay) {
+            if(!nglActive) return;
             
-            // Update total requests counter (simulated)
-            setInterval(() => {
-                const current = parseInt(document.getElementById('totalRequests').textContent) || 0;
-                const increment = Math.floor(Math.random() * 1000);
-                document.getElementById('totalRequests').textContent = (current + increment).toLocaleString();
-            }, 5000);
-        });
+            let sent = 0;
+            const interval = setInterval(() => {
+                if(!nglActive || sent >= count) {
+                    clearInterval(interval);
+                    if(sent >= count) {
+                        const terminal = document.getElementById('nglTerminal');
+                        terminal.innerHTML += `\n[NGL] ✅ Spam completed: ${sent}/${count} sent`;
+                        terminal.scrollTop = terminal.scrollHeight;
+                        logToTerminal(`NGL spam completed on ${target}`, 'NGL');
+                    }
+                    return;
+                }
+                
+                sent++;
+                nglStats.sent++;
+                
+                // Random failures
+                if(Math.random() < 0.1) {
+                    nglStats.failed++;
+                    nglStats.sent--;
+                }
+                
+                updateNGLStats();
+                
+                // Update terminal occasionally
+                if(sent % 10 === 0 || sent === count) {
+                    const terminal = document.getElementById('nglTerminal');
+                    terminal.innerHTML += `\n[NGL] [${sent}/${count}] Sent to ${target}`;
+                    terminal.scrollTop = terminal.scrollHeight;
+                }
+            }, delay);
+        }
+        
+        function stopNGLSpam() {
+            nglActive = false;
+            const terminal = document.getElementById('nglTerminal');
+            terminal.innerHTML += `\n[NGL] 🛑 Spam stopped`;
+            terminal.scrollTop = terminal.scrollHeight;
+            
+            logToTerminal('NGL spam stopped', 'NGL');
+        }
+        
+        function updateNGLStats() {
+            document.getElementById('nglSentCount').textContent = nglStats.sent;
+            document.getElementById('nglFailedCount').textContent = nglStats.failed;
+            
+            const total = nglStats.sent + nglStats.failed;
+            const successRate = total > 0 ? Math.round((nglStats.sent / total) * 100) : 0;
+            document.getElementById('nglSuccessRate').textContent = `${successRate}%`;
+            
+            if(nglStats.startTime) {
+                const elapsed = Math.round((Date.now() - nglStats.startTime) / 1000);
+                document.getElementById('nglTimeElapsed').textContent = `${elapsed}s`;
+            }
+        }
+        
+        function testNGLTarget() {
+            const target = document.getElementById('nglTarget').value;
+            if(!target) {
+                alert('Please enter a target first');
+                return;
+            }
+            
+            const terminal = document.getElementById('nglTerminal');
+            terminal.innerHTML += `\n[TEST] Testing NGL target: ${target}`;
+            
+            setTimeout(() => {
+                terminal.innerHTML += `\n[TEST] ✓ Target valid`;
+                terminal.innerHTML += `\n[TEST] ✓ Ready for spam`;
+                terminal.scrollTop = terminal.scrollHeight;
+            }, 1000);
+        }
+        
+        function useTemplate(num) {
+            const templates = {
+                1: "Hello from OXYLUS_PROTOCOL! 🚀",
+                2: "This is an automated message sent via secure channel.",
+                3: "System testing in progress. Please ignore this message."
+            };
+            
+            document.getElementById('nglMessage').value = templates[num] || '';
+            logToTerminal(`Template ${num} loaded`, 'NGL');
+        }
+        
+        function setCount(count) {
+            document.getElementById('nglCount').value = count;
+            logToTerminal(`Message count set to ${count}`, 'NGL');
+        }
+        
+        function clearNGLForm() {
+            document.getElementById('nglTarget').value = '';
+            document.getElementById('nglMessage').value = '';
+            document.getElementById('nglCount').value = '20';
+            document.getElementById('nglDelay').value = '2000';
+            logToTerminal('NGL form cleared', 'NGL');
+        }
+        
+        function clearNGLLog() {
+            document.getElementById('nglTerminal').innerHTML = '[NGL] Log cleared';
+        }
+        
+        function exportNGLStats() {
+            const data = {
+                sent: nglStats.sent,
+                failed: nglStats.failed,
+                successRate: Math.round((nglStats.sent / (nglStats.sent + nglStats.failed)) * 100) || 0,
+                timestamp: new Date().toISOString()
+            };
+            
+            const dataStr = JSON.stringify(data, null, 2);
+            const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+            
+            const link = document.createElement('a');
+            link.setAttribute('href', dataUri);
+            link.setAttribute('download', `ngl_stats_${Date.now()}.json`);
+            link.click();
+            
+            logToTerminal('NGL stats exported', 'NGL');
+        }
+        
+        // ==================== DEVELOPER PANEL FUNCTIONS ====================
+        function generatePassword() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+            let password = '';
+            for(let i = 0; i < 12; i++) {
+                password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('newPassword').value = password;
+        }
+        
+        function createAccount() {
+            const userType = SESSION_MANAGER.getUserType();
+            if(userType !== 'developer') {
+                alert('Only developer accounts can create new accounts');
+                return;
+            }
+            
+            const username = document.getElementById('newUsername').value.trim();
+            const password = document.getElementById('newPassword').value.trim();
+            const type = document.getElementById('accountType').value;
+            const expiryValue = parseInt(document.getElementById('expiryValue').value);
+            const expiryUnit = document.getElementById('expiryUnit').value;
+            
+            if(!username || !password) {
+                alert('Please fill all fields');
+                return;
+            }
+            
+            if(username === 'dev_master') {
+                alert('Cannot create account with reserved name');
+                return;
+            }
+            
+            // Load existing users
+            const users = JSON.parse(localStorage.getItem('oxylus_users') || '{}');
+            
+            if(users[username]) {
+                alert('Username already exists');
+                return;
+            }
+            
+            // Calculate expiry
+            let expired = null;
+            if(expiryValue > 0) {
+                const now = new Date();
+                switch(expiryUnit) {
+                    case 'minutes': now.setMinutes(now.getMinutes() + expiryValue); break;
+                    case 'hours': now.setHours(now.getHours() + expiryValue); break;
+                    case 'days': now.setDate(now.getDate() + expiryValue); break;
+                }
+                expired = now.toISOString();
+            }
+            
+            // Create user
+            users[username] = {
+                password: password,
+                type: type,
+                created: new Date().toISOString(),
+                expired: expired,
+                createdBy: SESSION_MANAGER.getUsername()
+            };
+            
+            // Save users
+        localStorage.setItem('oxylus_users', JSON.stringify(users));
+            
+            alert(`Account "${username}" created successfully!`);
+            clearAccountForm();
+            refreshAccounts();
+            updateAccountsCount();
+            
+            logToTerminal(`Created ${type} account: ${username}`, 'DEV');
+        }
+        
+        function clearAccountForm() {
+            document.getElementById('newUsername').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('accountType').value = 'guest';
+            document.getElementById('expiryValue').value = '1';
+            document.getElementById('expiryUnit').value = 'hours';
+        }
+        
+        function refreshAccounts() {
+            const userType = SESSION_MANAGER.getUserType();
+            if(userType !== 'developer') {
+                document.getElementById('accountsList').innerHTML = '[ERROR] Developer access required';
+                return;
+            }
+            
+            const users = JSON.parse(localStorage.getItem('oxylus_users') || '{}');
+            const container = document.getElementById('accountsList');
+            
+            let html = '<div style="display: grid; gap: 10px;">';
+            
+            for(const [username, data] of Object.entries(users)) {
+                if(username === 'dev_master') continue;
+                
+                const expired = data.expired && new Date(data.expired) < new Date();
+                const typeColor = {
+                    developer: '#00ff00',
+                    special: '#ff9900',
+                    guest: '#00aaff'
+                }[data.type] || '#ffffff';
+                
+                html += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; 
+                                padding: 15px; background: rgba(0, 40, 0, 0.5); border-radius: 8px;
+                                border-left: 4px solid ${typeColor}; cursor: pointer;"
+                         onclick="selectAccount('${username}')"
+                         id="account-${username}">
+                        <div>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <strong style="color: ${typeColor};">${username}</strong>
+                                <span style="color: var(--text-dim); font-size: 0.9rem;">${data.type.toUpperCase()}</span>
+                                ${expired ? '<span style="color: #ff0000; font-size: 0.8rem;">[EXPIRED]</span>' : ''}
+                            </div>
+                            <div style="color: var(--text-dim); font-size: 0.8rem; margin-top: 5px;">
+                                Created: ${new Date(data.created).toLocaleDateString()}
+                                ${data.expired ? ` | Expires: ${new Date(data.expired).toLocaleString()}` : ''}
+                            </div>
+                        </div>
+                        <div style="color: var(--text-dim); font-size: 0.9rem;">
+                            by ${data.createdBy || 'system'}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            container.innerHTML = html || '<div style="color: var(--text-dim); text-align: center;">No accounts found</div>';
+            
+            updateAccountsCount();
+        }
+        
+        function updateAccountsCount() {
+            const users = JSON.parse(localStorage.getItem('oxylus_users') || '{}');
+            const total = Object.keys(users).length - 1; // Exclude dev_master
+            const expired = Object.values(users).filter(user => 
+                user.expired && new Date(user.expired) < new Date()
+            ).length;
+            
+            document.getElementById('totalAccounts').textContent = total;
+            document.getElementById('expiredAccounts').textContent = expired;
+        }
+        
+        let selectedAccount = null;
+        
+        function selectAccount(username) {
+            // Remove previous selection
+            document.querySelectorAll('[id^="account-"]').forEach(el => {
+                el.style.background = 'rgba(0, 40, 0, 0.5)';
+            });
+            
+            // Highlight selected
+            const selected = document.getElementById(`account-${username}`);
+            if(selected) {
+                selected.style.background = 'rgba(0, 60, 0, 0.7)';
+                selectedAccount = username;
+            }
+        }
+        
+        function deleteSelectedAccount() {
+            if(!selectedAccount) {
+                alert('Please select an account first');
+                return;
+            }
+            
+            if(!confirm(`Delete account "${selectedAccount}"? This cannot be undone.`)) {
+                return;
+            }
+            
+            const users = JSON.parse(localStorage.getItem('oxylus_users') || '{}');
+            delete users[selectedAccount];
+            localStorage.setItem('oxylus_users', JSON.stringify(users));
+            
+            alert(`Account "${selectedAccount}" deleted successfully!`);
+            refreshAccounts();
+            selectedAccount = null;
+            
+            logToTerminal(`Deleted account: ${selectedAccount}`, 'DEV');
+        }
+        
+        function filterAccounts() {
+            const search = document.getElementById('searchAccount').value.toLowerCase();
+            const accounts = document.querySelectorAll('[id^="account-"]');
+            
+            accounts.forEach(account => {
+                const username = account.id.replace('account-', '');
+                if(username.toLowerCase().includes(search)) {
+                    account.style.display = 'flex';
+                } else {
+                    account.style.display = 'none';
+                }
+            });
+        }
+        
+        // ==================== SYSTEM FUNCTIONS ====================
+        function emergencyStop() {
+            if(confirm('EMERGENCY STOP\n\nAre you sure you want to stop ALL operations?')) {
+                // Stop DDoS
+                stopDDoSAttack();
+                
+                // Stop NGL spam
+                stopNGLSpam();
+                nglActive = false;
+                
+                // Update UI
+                document.getElementById('activeAttacks').textContent = '0';
+                
+                logToTerminal('EMERGENCY STOP: All operations terminated', 'ALERT');
+                alert('All operations stopped');
+            }
+        }
+        
+        function logout() {
+            if(confirm('Are you sure you want to logout?')) {
+                SESSION_MANAGER.logout();
+            }
+        }
+        
+        // Initialize accounts count on load
+        if(SESSION_MANAGER.getUserType() === 'developer') {
+            updateAccountsCount();
+        }
     </script>
 </body>
 </html>
