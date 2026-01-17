@@ -1,55 +1,63 @@
-// auth.js - Authentication system
+// auth.js - Authentication system for GUI
 const OXYLUS = {
     password: "DinoProtocol",
     authenticated: false,
     
-    auth(input) {
-        if(input === this.password) {
+    // Check if user is coming from login
+    checkAuth() {
+        // Check localStorage or session
+        const authStatus = localStorage.getItem('oxylus_auth');
+        if(authStatus === 'granted') {
             this.authenticated = true;
-            console.log("[AUTH] ✅ Access granted");
-            console.log("[SYSTEM] OXYLUS_PROTOCOL v4.0 ACTIVE");
             return true;
         }
-        console.log("[AUTH] ❌ Access denied");
+        
+        // Check URL parameter (fallback)
+        const urlParams = new URLSearchParams(window.location.search);
+        if(urlParams.get('auth') === 'true') {
+            this.authenticated = true;
+            localStorage.setItem('oxylus_auth', 'granted');
+            return true;
+        }
+        
         return false;
     },
     
+    // Set authentication
+    setAuth(status) {
+        this.authenticated = status;
+        if(status) {
+            localStorage.setItem('oxylus_auth', 'granted');
+        } else {
+            localStorage.removeItem('oxylus_auth');
+        }
+    },
+    
+    // Require authentication for commands
     requireAuth() {
         if(!this.authenticated) {
-            console.log("[ERROR] Authentication required");
+            console.log(`
+⚠️  AUTHENTICATION REQUIRED ⚠️
+
+Please login at the main page.
+            `);
             return false;
         }
         return true;
     },
     
-    showCommands() {
-        console.log(`
-╔══════════════════════════════════════════════╗
-║           OXYLUS_PROTOCOL v4.0              ║
-╠══════════════════════════════════════════════╣
-║ COMMANDS:                                    ║
-║                                              ║
-║ 1. DDoS Attack:                              ║
-║    OXYLUS.ddos.target("IP/DOMAIN", PORT,    ║
-║        INTENSITY, DURATION_SECONDS)         ║
-║    • Intensity: low/med/hard                ║
-║    • Duration: 0 = unlimited                ║
-║                                              ║
-║ 2. NGL Spam:                                 ║
-║    OXYLUS.ngl.spam("NGL_LINK",              ║
-║        "MESSAGE", COUNT, DELAY_MS)          ║
-║                                              ║
-║ 3. Target Scanner:                           ║
-║    OXYLUS.scan.target("IP/DOMAIN")          ║
-║                                              ║
-║ 4. System Control:                           ║
-║    OXYLUS.stop.all()                        ║
-║    OXYLUS.status()                          ║
-║                                              ║
-║ 5. Multi-Target Attack:                      ║
-║    OXYLUS.multi.attack(["target1",         ║
-║        "target2"], "hard")                  ║
-╚══════════════════════════════════════════════╝
-        `);
+    // Logout
+    logout() {
+        this.authenticated = false;
+        localStorage.removeItem('oxylus_auth');
+        window.location.href = 'index.html';
     }
 };
+
+// Auto-check on system.html
+if(window.location.pathname.includes('system.html')) {
+    if(!OXYLUS.checkAuth()) {
+        // Redirect to login if not authenticated
+        window.location.href = 'index.html';
+    }
+    }
