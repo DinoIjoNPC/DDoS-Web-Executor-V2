@@ -860,6 +860,167 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Tambahkan module baru di system.html -->
+
+<!-- Developer Panel Module -->
+<div id="devpanel" class="module">
+    <div class="content-header">
+        <h1 class="content-title">
+            <i class="fas fa-user-shield"></i>
+            DEVELOPER PANEL
+        </h1>
+        <p class="content-subtitle">Account Management System</p>
+    </div>
+    
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-title">TOTAL ACCOUNTS</div>
+                    <div class="stat-value" id="totalAccounts">0</div>
+                </div>
+                <i class="fas fa-users stat-icon"></i>
+            </div>
+            <div class="stat-trend trend-up">
+                <i class="fas fa-sync-alt"></i> Live count
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-title">ACTIVE SESSIONS</div>
+                    <div class="stat-value" id="activeSessions">1</div>
+                </div>
+                <i class="fas fa-user-clock stat-icon"></i>
+            </div>
+            <div class="stat-trend trend-up">
+                <i class="fas fa-user-check"></i> You are online
+            </div>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-header">
+                <div>
+                    <div class="stat-title">EXPIRED ACCOUNTS</div>
+                    <div class="stat-value" id="expiredAccounts">0</div>
+                </div>
+                <i class="fas fa-user-times stat-icon"></i>
+            </div>
+            <div class="stat-trend trend-down">
+                <i class="fas fa-exclamation-circle"></i> Needs cleanup
+            </div>
+        </div>
+    </div>
+    
+    <!-- Create Account Panel -->
+    <div class="attack-panel">
+        <h3 style="color: var(--primary); margin-bottom: 20px;">
+            <i class="fas fa-user-plus"></i> CREATE NEW ACCOUNT
+        </h3>
+        
+        <div class="panel-grid">
+            <div class="input-group">
+                <label class="input-label">
+                    <i class="fas fa-user"></i>
+                    USERNAME
+                </label>
+                <input type="text" class="input-field" id="newUsername" 
+                       placeholder="Enter username (no spaces)">
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">
+                    <i class="fas fa-key"></i>
+                    PASSWORD
+                </label>
+                <input type="text" class="input-field" id="newPassword" 
+                       placeholder="Auto-generate or type custom">
+                <button class="term-btn" onclick="generatePassword()" 
+                        style="margin-top: 10px;">
+                    <i class="fas fa-random"></i> Generate Password
+                </button>
+            </div>
+        </div>
+        
+        <div class="panel-grid">
+            <div class="input-group">
+                <label class="input-label">
+                    <i class="fas fa-user-tag"></i>
+                    ACCOUNT TYPE
+                </label>
+                <select class="input-field input-select" id="accountType">
+                    <option value="guest">GUEST - Basic features only</option>
+                    <option value="special">SPECIAL - Advanced features</option>
+                    <option value="developer">DEVELOPER - Full access</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">
+                    <i class="fas fa-clock"></i>
+                    EXPIRY TIME
+                </label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" class="input-field" id="expiryValue" 
+                           value="1" min="1" style="flex: 1;">
+                    <select class="input-field input-select" id="expiryUnit" style="flex: 1;">
+                        <option value="minutes">Minutes</option>
+                        <option value="hours" selected>Hours</option>
+                        <option value="days">Days</option>
+                    </select>
+                </div>
+                <small style="color: var(--text-dim); display: block; margin-top: 5px;">
+                    Set 0 for never expires (Developer only)
+                </small>
+            </div>
+        </div>
+        
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="createAccount()">
+                <i class="fas fa-user-plus"></i>
+                CREATE ACCOUNT
+            </button>
+            <button class="btn btn-secondary" onclick="clearAccountForm()">
+                <i class="fas fa-trash"></i>
+                CLEAR FORM
+            </button>
+        </div>
+    </div>
+    
+    <!-- Account List Panel -->
+    <div class="attack-panel" style="margin-top: 30px;">
+        <h3 style="color: var(--primary); margin-bottom: 20px;">
+            <i class="fas fa-list"></i> ACCOUNT LIST
+        </h3>
+        
+        <div class="terminal-output" id="accountsList" style="height: 300px;">
+[SYSTEM] Loading accounts...
+        </div>
+        
+        <div class="btn-group" style="margin-top: 20px;">
+            <button class="btn btn-secondary" onclick="refreshAccounts()">
+                <i class="fas fa-sync-alt"></i>
+                REFRESH LIST
+            </button>
+            <button class="btn btn-danger" onclick="deleteSelectedAccount()">
+                <i class="fas fa-user-minus"></i>
+                DELETE SELECTED
+            </button>
+        </div>
+        
+        <div class="input-group" style="margin-top: 20px;">
+            <label class="input-label">
+                <i class="fas fa-search"></i>
+                SEARCH ACCOUNT
+            </label>
+            <input type="text" class="input-field" id="searchAccount" 
+                   placeholder="Search by username..." 
+                   onkeyup="filterAccounts()">
+        </div>
+    </div>
+</div>
                     
                     <div class="terminal-output" id="mainTerminal">
 [SYSTEM] OXYLUS_PROTOCOL v4.0 initialized
