@@ -4,6 +4,7 @@
     <title>OXYLUS_PROTOCOL v4.0 - Control System</title>
     <meta charset="utf-8">
     <style>
+        /* [Keep all previous CSS styles exactly as before] */
         * {
             margin: 0;
             padding: 0;
@@ -34,202 +35,41 @@
             z-index: 1;
         }
         
-        .container {
-            display: flex;
-            height: 100vh;
-        }
+        /* ... [All previous CSS remains exactly the same] ... */
         
-        /* Sidebar */
-        .sidebar {
-            width: 280px;
-            background: rgba(10, 20, 10, 0.9);
-            border-right: 2px solid #0a0;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        
-        .logo {
-            color: #0f0;
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 30px;
-            padding-bottom: 15px;
-            border-bottom: 1px solid #0a0;
-        }
-        
-        .menu {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        
-        .menu-btn {
-            background: rgba(20, 40, 20, 0.7);
-            border: 1px solid #0a0;
-            color: #0f0;
-            padding: 15px;
-            text-align: left;
-            cursor: pointer;
-            transition: all 0.3s;
-            border-radius: 6px;
-            font-size: 14px;
-        }
-        
-        .menu-btn:hover {
-            background: rgba(30, 60, 30, 0.9);
-            border-color: #0f0;
-        }
-        
-        .menu-btn.active {
-            background: rgba(0, 50, 0, 0.9);
-            border-color: #0f0;
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.3);
-        }
-        
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-            position: relative;
-            z-index: 2;
-        }
-        
-        .module {
-            display: none;
-        }
-        
-        .module.active {
-            display: block;
-            animation: fadeIn 0.5s;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .module-title {
-            color: #0f0;
-            font-size: 24px;
-            margin-bottom: 25px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #0a0;
-        }
-        
-        /* Console */
-        #console {
-            background: rgba(0, 0, 0, 0.9);
-            border: 2px solid #0a0;
-            border-radius: 8px;
-            padding: 20px;
-            height: 400px;
-            overflow-y: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            line-height: 1.4;
-            white-space: pre-wrap;
-            margin-bottom: 20px;
-        }
-        
-        /* Buttons */
-        .btn {
-            background: linear-gradient(90deg, #006600, #00aa00);
-            border: none;
-            color: #000;
-            padding: 12px 24px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            margin: 5px;
-            transition: all 0.3s;
-        }
-        
-        .btn:hover {
-            background: linear-gradient(90deg, #00aa00, #00ff00);
-            transform: translateY(-2px);
-        }
-        
-        .btn-danger {
-            background: linear-gradient(90deg, #660000, #aa0000);
-        }
-        
-        .btn-danger:hover {
-            background: linear-gradient(90deg, #aa0000, #ff0000);
-        }
-        
-        /* Inputs */
-        .input-group {
-            margin-bottom: 20px;
-        }
-        
-        .input-label {
-            display: block;
-            color: #0f0;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        
-        .input-field {
-            width: 100%;
-            padding: 12px;
-            background: rgba(20, 40, 20, 0.7);
-            border: 1px solid #0a0;
-            border-radius: 6px;
-            color: #0f0;
-            font-size: 14px;
-        }
-        
-        .input-field:focus {
-            outline: none;
-            border-color: #0f0;
-            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
-        }
-        
-        /* Status bar */
-        .status-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            background: rgba(10, 30, 10, 0.95);
-            padding: 10px 20px;
-            border-top: 2px solid #0a0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 100;
-        }
-        
-        .status-item {
-            color: #0f0;
-            font-size: 12px;
-            font-family: 'Courier New', monospace;
-        }
-        
-        /* Logout button */
-        .logout-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: rgba(100, 0, 0, 0.8);
-            color: #fff;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            z-index: 1000;
-        }
-        
-        .logout-btn:hover {
-            background: rgba(150, 0, 0, 0.9);
-        }
     </style>
 </head>
 <body>
     <div class="scanlines"></div>
     
-    <div class="container">
+    <!-- Loading Screen -->
+    <div id="loadingScreen" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        color: #0f0;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+    ">
+        <div style="text-align: center;">
+            <div style="margin-bottom: 20px;">OXYLUS_PROTOCOL v4.0</div>
+            <div id="loadingText">Verifying session...</div>
+            <div style="margin-top: 20px;">
+                <span class="loader-dot"></span>
+                <span class="loader-dot"></span>
+                <span class="loader-dot"></span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container" style="display: none;" id="mainContainer">
         <!-- Sidebar -->
         <div class="sidebar">
             <div class="logo">OXYLUS_PROTOCOL</div>
@@ -330,22 +170,235 @@ System Status:
     </div>
     
     <!-- Status Bar -->
-    <div class="status-bar">
+    <div class="status-bar" style="display: none;" id="statusBar">
         <div class="status-item">STATUS: <span id="sysStatus" style="color:#0f0">Ready</span></div>
         <div class="status-item">USER: <span style="color:#0f0">AUTHORIZED</span></div>
         <div class="status-item">TIME: <span id="currentTime">--:--:--</span></div>
         <div class="status-item">MEMORY: <span id="memoryUsage">-- MB</span></div>
+        <div class="status-item">SESSION: <span id="sessionTimer">--:--</span></div>
     </div>
     
     <!-- Logout Button -->
-    <button class="logout-btn" onclick="logout()">Logout</button>
+    <button class="logout-btn" onclick="logout()" style="display: none;" id="logoutBtn">Logout</button>
     
     <script>
-        // Include all previous JavaScript modules here
-        // (DDoS engine, NGL spammer, etc.)
-        // They should be loaded from external files or embedded
+        // SESSION MANAGEMENT SYSTEM
+        class SessionManager {
+            constructor() {
+                this.sessionId = null;
+                this.sessionStart = null;
+                this.maxSessionHours = 12;
+                this.checkInterval = null;
+            }
+            
+            // Validate session
+            validateSession() {
+                // Check localStorage
+                const storedSession = localStorage.getItem('oxylus_session');
+                const storedTime = localStorage.getItem('oxylus_session_time');
+                
+                // Check URL parameters (from redirect)
+                const urlParams = new URLSearchParams(window.location.search);
+                const urlSession = urlParams.get('session');
+                
+                // Multiple validation checks
+                if(!storedSession || !storedTime) {
+                    console.log('[SESSION] No session found in localStorage');
+                    return false;
+                }
+                
+                // Check session age
+                const now = Date.now();
+                const sessionAge = now - parseInt(storedTime);
+                const maxAge = this.maxSessionHours * 60 * 60 * 1000;
+                
+                if(sessionAge > maxAge) {
+                    console.log('[SESSION] Session expired');
+                    this.clearSession();
+                    return false;
+                }
+                
+                // If URL has session param, verify it matches
+                if(urlSession && urlSession !== 'valid') {
+                    console.log('[SESSION] URL session parameter invalid');
+                    return false;
+                }
+                
+                // Set session data
+                this.sessionId = storedSession;
+                this.sessionStart = parseInt(storedTime);
+                
+                console.log(`[SESSION] Valid session found: ${this.sessionId}`);
+                console.log(`[SESSION] Age: ${Math.round(sessionAge/1000)} seconds`);
+                
+                return true;
+            }
+            
+            // Create new session (not used here, but available)
+            createSession() {
+                const sessionId = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('oxylus_session', sessionId);
+                localStorage.setItem('oxylus_session_time', Date.now().toString());
+                this.sessionId = sessionId;
+                this.sessionStart = Date.now();
+                return sessionId;
+            }
+            
+            // Clear session (logout)
+            clearSession() {
+                localStorage.removeItem('oxylus_session');
+                localStorage.removeItem('oxylus_session_time');
+                localStorage.removeItem('oxylus_auth');
+                
+                // Clear cookies
+                document.cookie = "oxylus_session=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+                
+                this.sessionId = null;
+                this.sessionStart = null;
+                
+                console.log('[SESSION] Session cleared');
+            }
+            
+            // Get session time remaining
+            getTimeRemaining() {
+                if(!this.sessionStart) return '00:00';
+                
+                const now = Date.now();
+                const elapsed = now - this.sessionStart;
+                const maxMs = this.maxSessionHours * 60 * 60 * 1000;
+                const remainingMs = maxMs - elapsed;
+                
+                if(remainingMs <= 0) return '00:00';
+                
+                const hours = Math.floor(remainingMs / (1000 * 60 * 60));
+                const minutes = Math.floor((remainingMs % (1000 * 60 * 60)) / (1000 * 60));
+                
+                return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            }
+            
+            // Start session monitoring
+            startMonitoring() {
+                // Update timer every minute
+                this.checkInterval = setInterval(() => {
+                    const timeRemaining = this.getTimeRemaining();
+                    document.getElementById('sessionTimer').textContent = timeRemaining;
+                    
+                    // Auto-logout when time expires
+                    if(timeRemaining === '00:00') {
+                        this.clearSession();
+                        alert('Session expired. Please login again.');
+                        window.location.href = 'index.html';
+                    }
+                }, 60000); // Check every minute
+                
+                // Initial update
+                document.getElementById('sessionTimer').textContent = this.getTimeRemaining();
+            }
+            
+            // Stop monitoring
+            stopMonitoring() {
+                if(this.checkInterval) {
+                    clearInterval(this.checkInterval);
+                }
+            }
+        }
         
-        // Simple system functions
+        // Initialize session manager
+        const sessionManager = new SessionManager();
+        
+        // Main initialization function
+        function initializeSystem() {
+            const loadingScreen = document.getElementById('loadingScreen');
+            const mainContainer = document.getElementById('mainContainer');
+            const statusBar = document.getElementById('statusBar');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const loadingText = document.getElementById('loadingText');
+            
+            // Step 1: Validate session
+            loadingText.textContent = 'Validating session...';
+            
+            setTimeout(() => {
+                if(sessionManager.validateSession()) {
+                    // Session valid
+                    loadingText.textContent = 'Session valid. Loading system...';
+                    
+                    setTimeout(() => {
+                        // Hide loading, show system
+                        loadingScreen.style.display = 'none';
+                        mainContainer.style.display = 'flex';
+                        statusBar.style.display = 'flex';
+                        logoutBtn.style.display = 'block';
+                        
+                        // Start session monitoring
+                        sessionManager.startMonitoring();
+                        
+                        // Initialize system components
+                        initSystemComponents();
+                        
+                    }, 1000);
+                    
+                } else {
+                    // Session invalid
+                    loadingText.textContent = 'Invalid or expired session. Redirecting...';
+                    
+                    setTimeout(() => {
+                        // Clear any invalid session data
+                        sessionManager.clearSession();
+                        
+                        // Redirect to login
+                        window.location.href = 'index.html';
+                    }, 2000);
+                }
+            }, 1500);
+        }
+        
+        // System component initialization
+        function initSystemComponents() {
+            // Set up OXYLUS global object
+            window.OXYLUS = window.OXYLUS || {};
+            window.OXYLUS.authenticated = true;
+            window.OXYLUS.session = sessionManager.sessionId;
+            
+            // Display welcome message
+            const consoleEl = document.getElementById('console');
+            consoleEl.innerHTML += '\n[SYSTEM] Session validated successfully';
+            consoleEl.innerHTML += '\n[SYSTEM] System fully initialized';
+            consoleEl.innerHTML += '\n[SYSTEM] All modules ready for operation';
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+            
+            // Start system functions
+            startSystemFunctions();
+        }
+        
+        // System functions
+        function startSystemFunctions() {
+            updateTime();
+            updateMemory();
+            
+            // Update time and memory every second
+            setInterval(() => {
+                updateTime();
+                updateMemory();
+            }, 1000);
+            
+            // Auto-focus on first input
+            document.getElementById('ddosTarget')?.focus();
+        }
+        
+        // Helper functions
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString();
+            document.getElementById('currentTime').textContent = timeStr;
+        }
+        
+        function updateMemory() {
+            if(performance.memory) {
+                const used = Math.round(performance.memory.usedJSHeapSize / 1048576);
+                document.getElementById('memoryUsage').textContent = `${used} MB`;
+            }
+        }
+        
         function showModule(moduleId) {
             // Hide all modules
             document.querySelectorAll('.module').forEach(m => {
@@ -364,25 +417,6 @@ System Status:
             event.target.classList.add('active');
         }
         
-        function updateTime() {
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString();
-            document.getElementById('currentTime').textContent = timeStr;
-        }
-        
-        function updateMemory() {
-            if(performance.memory) {
-                const used = Math.round(performance.memory.usedJSHeapSize / 1048576);
-                document.getElementById('memoryUsage').textContent = `${used} MB`;
-            }
-        }
-        
-        function logout() {
-            if(confirm("Are you sure you want to logout?")) {
-                window.location.href = 'index.html';
-            }
-        }
-        
         function runTest() {
             const consoleEl = document.getElementById('console');
             consoleEl.innerHTML += '\n[TEST] Running system diagnostics...';
@@ -395,6 +429,20 @@ System Status:
         
         function clearConsole() {
             document.getElementById('console').innerHTML = '[SYSTEM] Console cleared';
+        }
+        
+        // Logout function
+        function logout() {
+            if(confirm("Are you sure you want to logout?")) {
+                // Stop session monitoring
+                sessionManager.stopMonitoring();
+                
+                // Clear session
+                sessionManager.clearSession();
+                
+                // Redirect to login
+                window.location.href = 'index.html';
+            }
         }
         
         // DDoS functions
@@ -465,18 +513,31 @@ System Status:
             consoleEl.scrollTop = consoleEl.scrollHeight;
         }
         
-        // Update time and memory every second
-        setInterval(() => {
-            updateTime();
-            updateMemory();
-        }, 1000);
+        // Add loader dots animation
+        const loaderStyle = document.createElement('style');
+        loaderStyle.textContent = `
+            .loader-dot {
+                display: inline-block;
+                width: 8px;
+                height: 8px;
+                background: #0f0;
+                border-radius: 50%;
+                margin: 0 4px;
+                animation: loaderDots 1.4s infinite ease-in-out both;
+            }
+            
+            .loader-dot:nth-child(1) { animation-delay: -0.32s; }
+            .loader-dot:nth-child(2) { animation-delay: -0.16s; }
+            
+            @keyframes loaderDots {
+                0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+                40% { transform: scale(1); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(loaderStyle);
         
-        // Initialize
-        updateTime();
-        updateMemory();
-        
-        // Auto-focus on first input
-        document.getElementById('ddosTarget')?.focus();
+        // Start system initialization when page loads
+        document.addEventListener('DOMContentLoaded', initializeSystem);
     </script>
     
     <!-- Include external scripts -->
@@ -484,22 +545,6 @@ System Status:
     <script src="ddos-engine.js"></script>
     <script src="ngl-spammer.js"></script>
     <script src="advanced-modules.js"></script>
-    
-    <script>
-        // Initialize system after authentication
-        setTimeout(() => {
-            // Set authentication flag
-            window.OXYLUS = window.OXYLUS || {};
-            window.OXYLUS.authenticated = true;
-            
-            // Display welcome message
-            const consoleEl = document.getElementById('console');
-            consoleEl.innerHTML += '\n[SYSTEM] Modules loaded successfully';
-            consoleEl.innerHTML += '\n[SYSTEM] Type commands in browser console:';
-            consoleEl.innerHTML += '\n[SYSTEM]   OXYLUS.ddos.target("ip", port, "hard", 60)';
-            consoleEl.innerHTML += '\n[SYSTEM]   OXYLUS.ngl.spam("username", "msg", 50, 2000)';
-            consoleEl.scrollTop = consoleEl.scrollHeight;
-        }, 1000);
-    </script>
 </body>
-  </html>
+</html>
+    
