@@ -1,0 +1,2008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OXYLUS_PROTOCOL | Control Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00ff00;
+            --primary-dark: #00cc00;
+            --primary-light: #00ff88;
+            --secondary: #000000;
+            --secondary-light: #111111;
+            --secondary-dark: #050505;
+            --accent: #ff0000;
+            --accent-light: #ff3333;
+            --text: #ffffff;
+            --text-dim: #aaaaaa;
+            --panel-bg: rgba(10, 20, 10, 0.95);
+            --terminal-bg: rgba(0, 10, 0, 0.9);
+            --glow: 0 0 15px var(--primary);
+            --glow-strong: 0 0 25px var(--primary);
+            --danger-glow: 0 0 15px var(--accent);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Orbitron', 'Courier New', monospace;
+            background: var(--secondary);
+            color: var(--text);
+            min-height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Hex grid background */
+        .hex-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(0, 50, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(0, 30, 0, 0.1) 0%, transparent 50%);
+            z-index: -1;
+            opacity: 0.5;
+        }
+        
+        /* Loading Screen */
+        #loadingScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+        }
+        
+        .loader-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #0f0;
+            border-radius: 50%;
+            margin: 0 4px;
+            animation: loaderDots 1.4s infinite ease-in-out both;
+        }
+        
+        .loader-dot:nth-child(1) { animation-delay: -0.32s; }
+        .loader-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes loaderDots {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        
+        /* Header */
+        .system-header {
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 2px solid var(--primary);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .system-logo {
+            font-size: 1.8rem;
+            color: var(--primary);
+            text-shadow: var(--glow);
+            letter-spacing: 3px;
+            font-weight: 900;
+        }
+        
+        .system-version {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+        }
+        
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 15px;
+            background: rgba(0, 30, 0, 0.7);
+            border-radius: 20px;
+            border: 1px solid var(--primary);
+        }
+        
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--primary);
+            animation: pulse 2s infinite;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text-dim);
+        }
+        
+        /* Main Layout */
+        .main-layout {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--panel-bg);
+            border-right: 2px solid var(--primary-dark);
+            padding: 20px 0;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow-y: auto;
+        }
+        
+        .sidebar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+        
+        .user-profile {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.2);
+            margin-bottom: 20px;
+        }
+        
+        .avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            border: 3px solid var(--primary);
+            box-shadow: var(--glow);
+        }
+        
+        .username {
+            color: var(--primary);
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+        
+        .user-role {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+        }
+        
+        .nav-menu {
+            flex: 1;
+            padding: 0 15px;
+        }
+        
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 18px 20px;
+            color: var(--text-dim);
+            text-decoration: none;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        
+        .nav-item:hover {
+            background: rgba(0, 40, 0, 0.5);
+            color: var(--primary);
+            border-color: var(--primary-dark);
+        }
+        
+        .nav-item.active {
+            background: rgba(0, 60, 0, 0.7);
+            color: var(--primary);
+            border-color: var(--primary);
+            box-shadow: var(--glow);
+        }
+        
+        .nav-icon {
+            font-size: 1.2rem;
+            width: 24px;
+        }
+        
+        .nav-text {
+            flex: 1;
+            font-size: 1rem;
+            letter-spacing: 1px;
+        }
+        
+        .nav-badge {
+            background: var(--accent);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+        }
+        
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(0, 255, 0, 0.2);
+            margin-top: 20px;
+        }
+        
+        .session-timer {
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        .logout-btn {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #660000, #990000);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .logout-btn:hover {
+            background: linear-gradient(135deg, #990000, #cc0000);
+            box-shadow: var(--danger-glow);
+        }
+        
+        /* Main Content - MODIFIED FOR SCROLLING FRAME */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            position: relative;
+            /* Scrolling frame properties */
+            height: calc(100vh - 70px);
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on mobile */
+        }
+        
+        /* Responsive Layout */
+        @media (max-width: 768px) {
+            .main-layout {
+                flex-direction: column;
+                min-height: 100vh;
+            }
+            .sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 60vh;
+                border-right: none;
+                border-bottom: 2px solid var(--primary-dark);
+            }
+            .main-content {
+                height: auto;
+                min-height: 50vh;
+                padding: 20px;
+            }
+            .system-header {
+                padding: 10px 20px;
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+            .header-left, .header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+        
+        /* Mobile Optimization */
+        @media (max-width: 480px) {
+            .content-title {
+                font-size: 1.8rem;
+            }
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            .terminal-output {
+                height: 200px;
+            }
+            .attack-controls {
+                flex-direction: column;
+            }
+            .attack-btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+        }
+        
+        .content-header {
+            margin-bottom: 30px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--primary-dark);
+        }
+        
+        .content-title {
+            font-size: 2.2rem;
+            color: var(--primary);
+            text-shadow: var(--glow);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .content-subtitle {
+            color: var(--text-dim);
+            font-size: 1rem;
+            letter-spacing: 2px;
+        }
+        
+        /* Modules */
+        .module {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        
+        .module.active {
+            display: block;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Dashboard */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stat-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--primary-dark);
+            border-radius: 12px;
+            padding: 25px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card:hover {
+            border-color: var(--primary);
+            box-shadow: var(--glow);
+            transform: translateY(-5px);
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+        
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .stat-icon {
+            font-size: 2rem;
+            color: var(--primary);
+        }
+        
+        .stat-title {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            color: var(--primary);
+            font-weight: bold;
+            text-shadow: var(--glow);
+        }
+        
+        .stat-trend {
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+        
+        .trend-up { color: var(--primary); }
+        .trend-down { color: var(--accent); }
+        
+        /* Command Terminal */
+        .command-terminal {
+            background: var(--terminal-bg);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--glow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .terminal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+        }
+        
+        .terminal-title {
+            color: var(--primary);
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .terminal-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .term-btn {
+            background: rgba(0, 40, 0, 0.7);
+            border: 1px solid var(--primary-dark);
+            color: var(--primary);
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .term-btn:hover {
+            background: rgba(0, 60, 0, 0.9);
+            border-color: var(--primary);
+        }
+        
+        .terminal-output {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--primary-dark);
+            border-radius: 8px;
+            padding: 20px;
+            height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--primary);
+            white-space: pre-wrap;
+            margin-bottom: 20px;
+        }
+        
+        .terminal-input {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .input-prefix {
+            padding: 12px;
+            background: rgba(0, 40, 0, 0.7);
+            border: 1px solid var(--primary-dark);
+            border-radius: 6px;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+        }
+        
+        .cmd-input {
+            flex: 1;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--primary-dark);
+            border-radius: 6px;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+            outline: none;
+        }
+        
+        .cmd-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+        }
+        
+        .execute-btn {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            border: none;
+            border-radius: 6px;
+            color: black;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .execute-btn:hover {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            box-shadow: var(--glow-strong);
+        }
+        
+        /* Attack Controls - MODIFIED FOR DROPDOWN */
+        .attack-controls {
+            background: var(--panel-bg);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--glow);
+        }
+        
+        .attack-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .attack-title {
+            color: var(--primary);
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Dropdown Menu for Attacks */
+        .attack-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .dropdown-toggle {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            border: none;
+            border-radius: 6px;
+            color: black;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            letter-spacing: 1px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1000;
+            min-width: 250px;
+            background: var(--secondary-dark);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 10px 0;
+            margin-top: 5px;
+            box-shadow: var(--glow-strong);
+        }
+        
+        .dropdown-menu.show {
+            display: block;
+            animation: fadeIn 0.2s;
+        }
+        
+        .dropdown-item {
+            display: block;
+            padding: 12px 20px;
+            color: var(--text);
+            text-decoration: none;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        
+        .dropdown-item:hover {
+            background: rgba(0, 40, 0, 0.5);
+            color: var(--primary);
+            border-left-color: var(--primary);
+        }
+        
+        .dropdown-divider {
+            height: 1px;
+            background: rgba(0, 255, 0, 0.3);
+            margin: 8px 0;
+        }
+        
+        /* Target Input */
+        .target-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .target-url {
+            flex: 1;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--primary-dark);
+            border-radius: 6px;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+            min-width: 250px;
+        }
+        
+        .target-url:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+        }
+        
+        /* Attack Buttons Grid */
+        .attack-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .attack-btn {
+            padding: 15px;
+            background: rgba(0, 30, 0, 0.7);
+            border: 1px solid var(--primary-dark);
+            border-radius: 8px;
+            color: var(--primary);
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .attack-btn:hover {
+            background: rgba(0, 60, 0, 0.9);
+            border-color: var(--primary);
+            transform: translateY(-3px);
+            box-shadow: var(--glow);
+        }
+        
+        .attack-btn.dev {
+            background: linear-gradient(135deg, #6600cc, #9900ff);
+            border-color: #9900ff;
+            color: white;
+        }
+        
+        .attack-btn.dev:hover {
+            background: linear-gradient(135deg, #9900ff, #cc66ff);
+            box-shadow: 0 0 20px #9900ff;
+        }
+        
+        .attack-icon {
+            font-size: 1.8rem;
+        }
+        
+        .attack-label {
+            font-size: 0.9rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .attack-desc {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+        
+        /* Profile Module */
+        .profile-container {
+            background: var(--panel-bg);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: var(--glow);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .profile-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.3);
+        }
+        
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            border: 3px solid var(--primary);
+            box-shadow: var(--glow);
+        }
+        
+        .profile-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .info-card {
+            background: rgba(0, 20, 0, 0.5);
+            border: 1px solid var(--primary-dark);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .info-title {
+            color: var(--primary);
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-content {
+            color: var(--text);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        
+        .expired-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            background: var(--accent);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+        
+        .active-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            background: var(--primary-dark);
+            color: white;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-left: 10px;
+        }
+        
+        /* Password Change Form */
+        .password-form {
+            background: rgba(0, 20, 0, 0.5);
+            border: 1px solid var(--primary-dark);
+            border-radius: 10px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+        
+        .form-title {
+            color: var(--primary);
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            color: var(--text-dim);
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--primary-dark);
+            border-radius: 6px;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+        }
+        
+        .form-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+        }
+        
+        .form-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        
+        .submit-btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+            border: none;
+            border-radius: 6px;
+            color: black;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: bold;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .submit-btn:hover {
+            background: linear-gradient(135deg, var(--primary), var(--primary-light));
+            box-shadow: var(--glow);
+        }
+        
+        .cancel-btn {
+            padding: 12px 30px;
+            background: rgba(60, 0, 0, 0.7);
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            color: var(--text);
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .cancel-btn:hover {
+            background: rgba(90, 0, 0, 0.9);
+            box-shadow: var(--danger-glow);
+        }
+        
+        /* Developer Module - Account List */
+        .accounts-container {
+            background: var(--panel-bg);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: var(--glow);
+        }
+        
+        .accounts-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .accounts-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .account-card {
+            background: rgba(0, 20, 0, 0.5);
+            border: 1px solid var(--primary-dark);
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s;
+            position: relative;
+        }
+        
+        .account-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-5px);
+            box-shadow: var(--glow);
+        }
+        
+        .account-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .account-username {
+            color: var(--primary);
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        
+        .account-type {
+            padding: 3px 10px;
+            background: var(--primary-dark);
+            color: white;
+            border-radius: 15px;
+            font-size: 0.7rem;
+        }
+        
+        .account-details {
+            color: var(--text-dim);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+        }
+        
+        .account-details div {
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .copy-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 6px 12px;
+            background: rgba(0, 40, 0, 0.7);
+            border: 1px solid var(--primary-dark);
+            border-radius: 6px;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+        }
+        
+        .copy-btn:hover {
+            background: rgba(0, 60, 0, 0.9);
+            border-color: var(--primary);
+            box-shadow: 0 0 10px var(--primary);
+        }
+        
+        /* Copy Modal */
+        .copy-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .copy-modal.show {
+            display: flex;
+            animation: fadeIn 0.3s;
+        }
+        
+        .copy-content {
+            background: var(--secondary-dark);
+            border: 3px solid var(--primary);
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: var(--glow-strong);
+            position: relative;
+        }
+        
+        .copy-header {
+            color: var(--primary);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .copy-box {
+            background: rgba(0, 0, 0, 0.7);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            color: var(--primary);
+            line-height: 1.8;
+        }
+        
+        .copy-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .copy-close {
+            padding: 10px 25px;
+            background: rgba(60, 0, 0, 0.7);
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .copy-close:hover {
+            background: rgba(90, 0, 0, 0.9);
+            box-shadow: var(--danger-glow);
+        }
+        
+        /* Animations */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Utility Classes */
+        .text-center { text-align: center; }
+        .mt-20 { margin-top: 20px; }
+        .mb-20 { margin-bottom: 20px; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <!-- Hex Grid Background -->
+    <div class="hex-bg"></div>
+    
+    <!-- Loading Screen -->
+    <div id="loadingScreen">
+        <div>
+            <div>INITIALIZING OXYLUS_PROTOCOL v6.0</div>
+            <div style="margin: 20px 0;">
+                <span class="loader-dot"></span>
+                <span class="loader-dot"></span>
+                <span class="loader-dot"></span>
+            </div>
+            <div>LOADING MULTI-USER FRAMEWORK...</div>
+        </div>
+    </div>
+    
+    <!-- Header -->
+    <header class="system-header">
+        <div class="header-left">
+            <div class="system-logo">OXYLUS_PROTOCOL</div>
+            <div class="system-version">v6.0 | EXECUTION FRAMEWORK</div>
+        </div>
+        <div class="header-right">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>SYSTEM STATUS: ACTIVE</span>
+            </div>
+            <div class="user-info">
+                <i class="fas fa-user-shield"></i>
+                <span id="currentUser">root@oxylus</span>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="user-profile">
+                <div class="avatar">
+                    <i class="fas fa-terminal"></i>
+                </div>
+                <div class="username" id="sidebarUsername">ADMIN</div>
+                <div class="user-role">DEVELOPER ACCESS</div>
+            </div>
+            
+            <div class="nav-menu">
+                <div class="nav-item active" data-module="dashboard">
+                    <i class="fas fa-tachometer-alt nav-icon"></i>
+                    <span class="nav-text">DASHBOARD</span>
+                </div>
+                <div class="nav-item" data-module="attack">
+                    <i class="fas fa-crosshairs nav-icon"></i>
+                    <span class="nav-text">ATTACK MODULE</span>
+                    <span class="nav-badge">NEW</span>
+                </div>
+                <div class="nav-item" data-module="developer">
+                    <i class="fas fa-code nav-icon"></i>
+                    <span class="nav-text">DEVELOPER</span>
+                </div>
+                <div class="nav-item" data-module="profile">
+                    <i class="fas fa-user-cog nav-icon"></i>
+                    <span class="nav-text">PROFILE</span>
+                </div>
+                <div class="nav-item" data-module="terminal">
+                    <i class="fas fa-terminal nav-icon"></i>
+                    <span class="nav-text">SYSTEM TERMINAL</span>
+                </div>
+                <div class="nav-item" data-module="accounts">
+                    <i class="fas fa-users nav-icon"></i>
+                    <span class="nav-text">ACCOUNT MANAGER</span>
+                    <span class="nav-badge">DEV</span>
+                </div>
+                <div class="nav-item" data-module="logs">
+                    <i class="fas fa-clipboard-list nav-icon"></i>
+                    <span class="nav-text">SYSTEM LOGS</span>
+                </div>
+                <div class="nav-item" data-module="settings">
+                    <i class="fas fa-cog nav-icon"></i>
+                    <span class="nav-text">SETTINGS</span>
+                </div>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="session-timer">
+                    <i class="fas fa-clock"></i>
+                    <span>SESSION: </span>
+                    <span id="sessionTimer">00:00:00</span>
+                </div>
+                <button class="logout-btn" id="logoutBtn">
+                    <i class="fas fa-power-off"></i>
+                    <span>TERMINATE SESSION</span>
+                </button>
+            </div>
+        </nav>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Module -->
+            <div class="module active" id="dashboard">
+                <div class="content-header">
+                    <h1 class="content-title">
+                        <i class="fas fa-tachometer-alt"></i>
+                        SYSTEM DASHBOARD
+                    </h1>
+                    <p class="content-subtitle">REAL-TIME MONITORING & EXECUTION CONTROL</p>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">ACTIVE CONNECTIONS</div>
+                            <i class="fas fa-network-wired stat-icon"></i>
+                        </div>
+                        <div class="stat-value" id="activeConnections">2,847</div>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up"></i>
+                            +12.5% from last hour
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">REQUEST PER SECOND</div>
+                            <i class="fas fa-bolt stat-icon"></i>
+                        </div>
+                        <div class="stat-value" id="rpsCounter">47.2K</div>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up"></i>
+                            +8.3% from last hour
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">SYSTEM UPTIME</div>
+                            <i class="fas fa-server stat-icon"></i>
+                        </div>
+                        <div class="stat-value" id="systemUptime">99.7%</div>
+                        <div class="stat-trend trend-down">
+                            <i class="fas fa-arrow-down"></i>
+                            -0.1% from yesterday
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">TARGETS ONLINE</div>
+                            <i class="fas fa-crosshairs stat-icon"></i>
+                        </div>
+                        <div class="stat-value" id="targetsOnline">14</div>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up"></i>
+                            +3 new targets
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="command-terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-title">
+                            <i class="fas fa-terminal"></i>
+                            QUICK COMMAND EXECUTOR
+                        </div>
+                        <div class="terminal-controls">
+                            <button class="term-btn" id="clearTerminal">
+                                <i class="fas fa-broom"></i>
+                                CLEAR
+                            </button>
+                            <button class="term-btn" id="runTest">
+                                <i class="fas fa-play"></i>
+                                TEST
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="terminal-output" id="terminalOutput">
+[BOOT] Initializing OXYLUS_PROTOCOL v6.0...
+[BOOT] Loading multi-user authentication...
+[BOOT] Establishing encrypted connection...
+[BOOT] System integrity check: PASSED
+[BOOT] All systems nominal
+[BOOT] Ready for execution protocols
+[STATUS] Active connections: 2,847
+[STATUS] RPS: 47,200
+[STATUS] Encryption: AES-256 ACTIVE
+[STATUS] Network: ANONYMIZED
+&gt; System ready for commands.
+                    </div>
+                    
+                    <div class="terminal-input">
+                        <div class="input-prefix">root@oxylus:~#</div>
+                        <input type="text" class="cmd-input" id="cmdInput" placeholder="Enter command...">
+                        <button class="execute-btn" id="executeCmd">
+                            <i class="fas fa-play"></i>
+                            EXECUTE
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Attack Module -->
+            <div class="module" id="attack">
+                <div class="content-header">
+                    <h1 class="content-title">
+                        <i class="fas fa-crosshairs"></i>
+                        ATTACK MODULE
+                    </h1>
+                    <p class="content-subtitle">DISTRIBUTED EXECUTION CONTROL CENTER</p>
+                </div>
+                
+                <div class="attack-controls">
+                    <div class="attack-header">
+                        <div class="attack-title">
+                            <i class="fas fa-bullseye"></i>
+                            TARGET CONFIGURATION
+                        </div>
+                        <!-- Dropdown Menu for Attack Types -->
+                        <div class="attack-dropdown">
+                            <button class="dropdown-toggle" id="attackDropdown">
+                                <i class="fas fa-ellipsis-h"></i>
+                                SELECT ATTACK TYPE
+                            </button>
+                            <div class="dropdown-menu" id="attackMenu">
+                                <a href="#" class="dropdown-item" data-attack="ddos">
+                                    <i class="fas fa-network-wired"></i>
+                                    DDoS Attack
+                                </a>
+                                <a href="#" class="dropdown-item" data-attack="dev">
+                                    <i class="fas fa-server"></i>
+                                    Dev (100k+ RPS)
+                                </a>
+                                <a href="#" class="dropdown-item" data-attack="spam">
+                                    <i class="fas fa-envelope"></i>
+                                    NGL Spam
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a href="#" class="dropdown-item" data-attack="http">
+                                    <i class="fas fa-globe"></i>
+                                    HTTP Flood
+                                </a>
+                                <a href="#" class="dropdown-item" data-attack="slowloris">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                    Slowloris
+                                </a>
+                                <a href="#" class="dropdown-item" data-attack="udp">
+                                    <i class="fas fa-broadcast-tower"></i>
+                                    UDP Amplification
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="target-input">
+                        <input type="text" class="target-url" id="targetUrl" placeholder="https://target-domain.com" value="https://ddos-exe.vercel.app/index.html">
+                        <button class="execute-btn" id="startAttack">
+                            <i class="fas fa-play"></i>
+                            LAUNCH ATTACK
+                        </button>
+                        <button class="term-btn" id="stopAttack">
+                            <i class="fas fa-stop"></i>
+                            STOP
+                        </button>
+                    </div>
+                    
+                    <!-- Attack Buttons Grid -->
+                    <div class="attack-buttons">
+                        <div class="attack-btn" data-attack="ddos">
+                            <i class="fas fa-network-wired attack-icon"></i>
+                            <div class="attack-label">DDoS ATTACK</div>
+                            <div class="attack-desc">Standard flood attack</div>
+                        </div>
+                        
+                        <div class="attack-btn dev" data-attack="dev">
+                            <i class="fas fa-server attack-icon"></i>
+                            <div class="attack-label">DEV (100k+ RPS)</div>
+                            <div class="attack-desc">High-performance attack</div>
+                        </div>
+                        
+                        <div class="attack-btn" data-attack="spam">
+                            <i class="fas fa-envelope attack-icon"></i>
+                            <div class="attack-label">NGL SPAM</div>
+                            <div class="attack-desc">Message flooding</div>
+                        </div>
+                        
+                        <div class="attack-btn" data-attack="http">
+                            <i class="fas fa-globe attack-icon"></i>
+                            <div class="attack-label">HTTP FLOOD</div>
+                            <div class="attack-desc">Layer 7 attack</div>
+                        </div>
+                        
+                        <div class="attack-btn" data-attack="slowloris">
+                            <i class="fas fa-tachometer-alt attack-icon"></i>
+                            <div class="attack-label">SLOWLORIS</div>
+                            <div class="attack-desc">Connection exhaustion</div>
+                        </div>
+                        
+                        <div class="attack-btn" data-attack="udp">
+                            <i class="fas fa-broadcast-tower attack-icon"></i>
+                            <div class="attack-label">UDP AMP</div>
+                            <div class="attack-desc">Amplification attack</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="command-terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-title">
+                            <i class="fas fa-chart-bar"></i>
+                            ATTACK MONITOR
+                        </div>
+                        <div class="terminal-controls">
+                            <button class="term-btn" id="attackLogs">
+                                <i class="fas fa-history"></i>
+                                LOGS
+                            </button>
+                            <button class="term-btn" id="exportData">
+                                <i class="fas fa-download"></i>
+                                EXPORT
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="terminal-output" id="attackOutput">
+[ATTACK MODULE] Initialized
+[INFO] Select target and attack type
+[INFO] Dev (100k+ RPS) available for developer accounts
+[INFO] All attacks use encrypted channels
+[INFO] System ready for execution
+&gt; No active attacks.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Developer Module -->
+            <div class="module" id="developer">
+                <div class="content-header">
+                    <h1 class="content-title">
+                        <i class="fas fa-code"></i>
+                        DEVELOPER PANEL
+                    </h1>
+                    <p class="content-subtitle">SYSTEM CONFIGURATION & SCRIPT MANAGEMENT</p>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">ACTIVE SCRIPTS</div>
+                            <i class="fas fa-file-code stat-icon"></i>
+                        </div>
+                        <div class="stat-value" id="activeScripts">18</div>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up"></i>
+                            +3 this session
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">API REQUESTS</div>
+                            <i class="fas fa-exchange-alt stat-icon"></i>
+                        </div>
+                        <div class="stat-value" id="apiRequests">4.2M</div>
+                        <div class="stat-trend trend-up">
+                            <i class="fas fa-arrow-up"></i>
+                            +240K today
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">ERROR RATE</div>
+                            <i class="fas fa-bug stat-icon"></i>
+                        </div>
+                        <div class="stat-value" id="errorRate">0.02%</div>
+                        <div class="stat-trend trend-down">
+                            <i class="fas fa-arrow-down"></i>
+                            -0.01% from yesterday
+                        </div>
+                    </div>
+                    
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <div class="stat-title">RESPONSE TIME</div>
+                            <i class="fas fa-stopwatch stat-icon"></i>
+                        </div>
+                        <div class="stat-value" id="responseTime">47ms</div>
+                        <div class="stat-trend trend-down">
+                            <i class="fas fa-arrow-down"></i>
+                            -8ms optimized
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="command-terminal">
+                    <div class="terminal-header">
+                        <div class="terminal-title">
+                            <i class="fas fa-terminal"></i>
+                            DEVELOPER CONSOLE
+                        </div>
+                        <div class="terminal-controls">
+                            <button class="term-btn" id="devClear">
+                                <i class="fas fa-broom"></i>
+                                CLEAR
+                            </button>
+                            <button class="term-btn" id="runScript">
+                                <i class="fas fa-play"></i>
+                                RUN SCRIPT
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="terminal-output" id="devOutput">
+[DEV] Developer panel initialized
+[DEV] Access level: ROOT
+[DEV] Script permissions: FULL
+[DEV] API endpoints: 24 available
+[DEV] Custom modules: 8 loaded
+[DEV] Ready for system commands
+&gt; Type 'help' for available commands.
+                    </div>
+                    
+                    <div class="terminal-input">
+                        <div class="input-prefix">dev@oxylus:~#</div>
+                        <input type="text" class="cmd-input" id="devInput" placeholder="Enter script or command...">
+                        <button class="execute-btn" id="executeDev">
+                            <i class="fas fa-play"></i>
+                            EXECUTE
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Profile Module -->
+            <div class="module" id="profile">
+                <div class="content-header">
+                    <h1 class="content-title">
+                        <i class="fas fa-user-cog"></i>
+                        USER PROFILE
+                    </h1>
+                    <p class="content-subtitle">ACCOUNT MANAGEMENT & SETTINGS</p>
+                </div>
+                
+                <div class="profile-container">
+                    <div class="profile-header">
+                        <div class="profile-avatar">
+                            <i class="fas fa-user-secret"></i>
+                        </div>
+                        <h2 id="profileName">ADMINISTRATOR</h2>
+                        <div class="user-role">DEVELOPER ACCOUNT <span class="active-badge">ACTIVE</span></div>
+                    </div>
+                    
+                    <div class="profile-info">
+                        <div class="info-card">
+                            <h3 class="info-title">
+                                <i class="fas fa-id-card"></i>
+                                ACCOUNT INFORMATION
+                            </h3>
+                            <div class="info-content">
+                                <div><strong>Username:</strong> <span id="infoUsername">admin</span></div>
+                                <div><strong>Account Type:</strong> Developer</div>
+                                <div><strong>Joined:</strong> 2024-01-15</div>
+                                <div><strong>Last Login:</strong> <span id="lastLogin">2026-01-18 14:30:22 UTC</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="info-card">
+                            <h3 class="info-title">
+                                <i class="fas fa-clock"></i>
+                                SUBSCRIPTION STATUS
+                            </h3>
+                            <div class="info-content">
+                                <div><strong>Plan:</strong> Enterprise</div>
+                                <div><strong>Expires:</strong> <span id="accountExpiry">2027-01-18</span></div>
+                                <div><strong>Status:</strong> <span id="expiryStatus">Active <span class="active-badge">VALID</span></span></div>
+                                <div><strong>Features:</strong> Full access</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Password Change Form -->
+                    <div class="password-form" id="passwordForm">
+                        <h3 class="form-title">
+                            <i class="fas fa-key"></i>
+                            CHANGE PASSWORD
+                        </h3>
+                        <div class="form-group">
+                            <label class="form-label">CURRENT PASSWORD</label>
+                            <input type="password" class="form-input" id="currentPassword" placeholder="Enter current password">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">NEW PASSWORD</label>
+                            <input type="password" class="form-input" id="newPassword" placeholder="Enter new password">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">CONFIRM NEW PASSWORD</label>
+                            <input type="password" class="form-input" id="confirmPassword" placeholder="Confirm new password">
+                        </div>
+                        <div class="form-buttons">
+                            <button class="submit-btn" id="changePassword">
+                                <i class="fas fa-save"></i>
+                                UPDATE PASSWORD
+                            </button>
+                            <button class="cancel-btn" id="cancelPassword">
+                                CANCEL
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Account Manager Module -->
+            <div class="module" id="accounts">
+                <div class="content-header">
+                    <h1 class="content-title">
+                        <i class="fas fa-users"></i>
+                        ACCOUNT MANAGER
+                    </h1>
+                    <p class="content-subtitle">SYSTEM USER MANAGEMENT</p>
+                </div>
+                
+                <div class="accounts-container">
+                    <div class="accounts-header">
+                        <div class="attack-title">
+                            <i class="fas fa-user-friends"></i>
+                            REGISTERED ACCOUNTS
+                        </div>
+                        <button class="execute-btn" id="addAccount">
+                            <i class="fas fa-plus"></i>
+                            ADD ACCOUNT
+                        </button>
+                    </div>
+                    
+                    <div class="accounts-list" id="accountsList">
+                        <!-- Account cards will be populated here by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Other modules (Terminal, Logs, Settings) would follow similar structure -->
+        </main>
+    </div>
+    
+    <!-- Copy Modal -->
+    <div class="copy-modal" id="copyModal">
+        <div class="copy-content">
+            <h2 class="copy-header">
+                <i class="fas fa-clipboard"></i>
+                ACCOUNT CREDENTIALS
+            </h2>
+            <div class="copy-box" id="copyBox">
+===========================
+Username : admin
+===========================
+Password : ********
+===========================
+Website : https://ddos-exe.vercel.app/index.html
+===========================
+            </div>
+            <div class="copy-buttons">
+                <button class="execute-btn" id="copyToClipboard">
+                    <i class="fas fa-copy"></i>
+                    COPY TO CLIPBOARD
+                </button>
+                <button class="copy-close" id="closeCopyModal">
+                    CLOSE
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simulate loading
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.display = 'none';
+            }, 1500);
+            
+            // Session timer
+            let sessionSeconds = 0;
+            const sessionTimer = document.getElementById('sessionTimer');
+            setInterval(() => {
+                sessionSeconds++;
+                const hours = Math.floor(sessionSeconds / 3600);
+                const minutes = Math.floor((sessionSeconds % 3600) / 60);
+                const seconds = sessionSeconds % 60;
+                sessionTimer.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+            
+            // Navigation
+            const navItems = document.querySelectorAll('.nav-item');
+            const modules = document.querySelectorAll('.module');
+            
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const moduleId = this.getAttribute('data-module');
+                    
+                    // Update active nav item
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show corresponding module
+                    modules.forEach(module => {
+                        module.classList.remove('active');
+                        if (module.id === moduleId) {
+                            module.classList.add('active');
+                        }
+                    });
+                    
+                    // Special handling for profile module
+                    if (moduleId === 'profile') {
+                        updateProfileInfo();
+                    }
+                    
+                    // Special handling for accounts module
+                    if (moduleId === 'accounts') {
+                        loadAccounts();
+                    }
+                });
+            });
+            
+            // Attack Dropdown
+            const attackDropdown = document.getElementById('attackDropdown');
+            const attackMenu = document.getElementById('attackMenu');
+            
+            attackDropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+                attackMenu.classList.toggle('show');
+            });
+            
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function() {
+                attackMenu.classList.remove('show');
+            });
+            
+            // Attack type selection
+            const dropdownItems = document.querySelectorAll('.dropdown-item');
+            const attackButtons = document.querySelectorAll('.attack-btn');
+            
+            dropdownItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const attackType = this.getAttribute('data-attack');
+                    selectAttack(attackType);
+                    attackMenu.classList.remove('show');
+                });
+            });
+            
+            attackButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const attackType = this.getAttribute('data-attack');
+                    selectAttack(attackType);
+                });
+            });
+            
+            function selectAttack(type) {
+                // Update UI to show selected attack
+                attackButtons.forEach(btn => {
+                    btn.style.borderWidth = '1px';
+                    btn.style.borderColor = 'var(--primary-dark)';
+                });
+                
+                const selectedBtn = document.querySelector(`.attack-btn[data-attack="${type}"]`);
+                if (selectedBtn) {
+                    selectedBtn.style.borderWidth = '3px';
+                    selectedBtn.style.borderColor = 'var(--primary)';
+                }
+                
+                // Update dropdown text
+                let attackName = 'SELECT ATTACK TYPE';
+                switch(type) {
+                    case 'ddos': attackName = 'DDoS Attack'; break;
+                    case 'dev': attackName = 'Dev (100k+ RPS)'; break;
+                    case 'spam': attackName = 'NGL Spam'; break;
+                    case 'http': attackName = 'HTTP Flood'; break;
+                    case 'slowloris': attackName = 'Slowloris'; break;
+                    case 'udp': attackName = 'UDP Amplification'; break;
+                }
+                
+                attackDropdown.innerHTML = `<i class="fas fa-ellipsis-h"></i> ${attackName}`;
+                
+                // Update attack output
+                const attackOutput = document.getElementById('attackOutput');
+                attackOutput.innerHTML += `\n&gt; Selected: ${attackName}\n&gt; Target: ${document.getElementById('targetUrl').value}\n&gt; Ready to launch.`;
+                attackOutput.scrollTop = attackOutput.scrollHeight;
+            }
+            
+            // Start Attack
+            document.getElementById('startAttack').addEventListener('click', function() {
+                const target = document.getElementById('targetUrl').value;
+                const attackOutput = document.getElementById('attackOutput');
+                
+                if (!target) {
+                    attackOutput.innerHTML += '\n&gt; ERROR: No target specified';
+                    attackOutput.scrollTop = attackOutput.scrollHeight;
+                    return;
+                }
+                
+                attackOutput.innerHTML += `\n[ATTACK] Launching attack on ${target}`;
+                attackOutput.innerHTML += `\n[ATTACK] Establishing connections...`;
+                attackOutput.innerHTML += `\n[ATTACK] Sending requests...`;
+                attackOutput.innerHTML += `\n[ATTACK] Attack in progress...`;
+                attackOutput.scrollTop = attackOutput.scrollHeight;
+                
+                // Simulate RPS counter
+                let rps = 0;
+                const rpsInterval = setInterval(() => {
+                    rps += Math.floor(Math.random() * 5000) + 10000;
+                    document.getElementById('rpsCounter').textContent = (rps / 1000).toFixed(1) + 'K';
+                }, 1000);
+                
+                // Stop attack when stop button is clicked
+                const stopBtn = document.getElementById('stopAttack');
+                const originalStopHandler = stopBtn.onclick;
+                
+                stopBtn.onclick = function() {
+                    clearInterval(rpsInterval);
+                    attackOutput.innerHTML += `\n[ATTACK] Attack stopped`;
+                    attackOutput.innerHTML += `\n&gt; Total requests sent: ${rps.toLocaleString()}`;
+                    attackOutput.scrollTop = attackOutput.scrollHeight;
+                    stopBtn.onclick = originalStopHandler;
+                };
+            });
+            
+            // Profile Information
+            function updateProfileInfo() {
+                // Simulate fetching user data
+                const userData = {
+                    username: 'admin',
+                    name: 'ADMINISTRATOR',
+                    expiry: '2027-01-18',
+                    lastLogin: new Date().toISOString().replace('T', ' ').substr(0, 19) + ' UTC'
+                };
+                
+                document.getElementById('profileName').textContent = userData.name;
+                document.getElementById('infoUsername').textContent = userData.username;
+                document.getElementById('accountExpiry').textContent = userData.expiry;
+                document.getElementById('lastLogin').textContent = userData.lastLogin;
+                
+                // Check if account is expired
+                const expiryDate = new Date(userData.expiry);
+                const today = new Date();
+                const expiryStatus = document.getElementById('expiryStatus');
+                
+                if (expiryDate < today) {
+                    expiryStatus.innerHTML = 'Expired <span class="expired-badge">EXPIRED</span>';
+                } else {
+                    expiryStatus.innerHTML = 'Active <span class="active-badge">VALID</span>';
+                }
+            }
+            
+            // Password Change
+            document.getElementById('changePassword').addEventListener('click', function() {
+                const currentPass = document.getElementById('currentPassword').value;
+                const newPass = document.getElementById('newPassword').value;
+                const confirmPass = document.getElementById('confirmPassword').value;
+                
+                if (!currentPass || !newPass || !confirmPass) {
+                    alert('Please fill in all password fields');
+                    return;
+                }
+                
+                if (newPass !== confirmPass) {
+                    alert('New passwords do not match');
+                    return;
+                }
+                
+                // In a real system, this would validate against server
+                if (currentPass.length < 6) {
+                    alert('Current password is incorrect');
+                    return;
+                }
+                
+                // Simulate password change
+                alert('Password changed successfully. Redirecting to login...');
+                
+                // Redirect to login
+                setTimeout(() => {
+                    window.location.href = 'https://ddos-exe.vercel.app/index.html';
+                }, 2000);
+            });
+            
+            document.getElementById('cancelPassword').addEventListener('click', function() {
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+            });
+            
+            // Account Management
+            function loadAccounts() {
+                const accountsList = document.getElementById('accountsList');
+                
+                // Sample account data
+                const accounts = [
+                    { username: 'admin', password: 'admin123', type: 'Developer', status: 'Active', expiry: '2027-01-18' },
+                    { username: 'user1', password: 'pass123', type: 'Special', status: 'Active', expiry: '2026-06-30' },
+                    { username: 'user2', password: 'pass456', type: 'Guest', status: 'Expired', expiry: '2025-12-01' },
+                    { username: 'user3', password: 'pass789', type: 'Special', status: 'Active', expiry: '2026-09-15' },
+                    { username: 'user4', password: 'pass101', type: 'Guest', status: 'Active', expiry: '2026-03-20' },
+                    { username: 'user5', password: 'pass202', type: 'Developer', status: 'Active', expiry: '2027-03-10' }
+                ];
+                
+                accountsList.innerHTML = '';
+                
+                accounts.forEach(account => {
+                    const card = document.createElement('div');
+                    card.className = 'account-card';
+                    
+                    const statusClass = account.status === 'Active' ? 'active-badge' : 'expired-badge';
+                    
+                    card.innerHTML = `
+                        <button class="copy-btn" data-username="${account.username}" data-password="${account.password}">
+                            <i class="fas fa-copy"></i> COPY
+                        </button>
+                        <div class="account-header">
+                            <div class="account-username">${account.username}</div>
+                            <div class="account-type">${account.type}</div>
+                        </div>
+                        <div class="account-details">
+                            <div><i class="fas fa-key"></i> <strong>Password:</strong> ${account.password}</div>
+                            <div><i class="fas fa-calendar"></i> <strong>Expires:</strong> ${account.expiry}</div>
+                            <div><i class="fas fa-circle"></i> <strong>Status:</strong> ${account.status} <span class="${statusClass}">${account.status.toUpperCase()}</span></div>
+                        </div>
+                    `;
+                    
+                    accountsList.appendChild(card);
+                });
+                
+                // Add copy functionality to all copy buttons
+                document.querySelectorAll('.copy-btn').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const username = this.getAttribute('data-username');
+                        const password = this.getAttribute('data-password');
+                        
+                        const copyText = `===========================
+Username : ${username}
+===========================
+Password : ${password}
+===========================
+Website : https://ddos-exe.vercel.app/index.html
+===========================`;
+                        
+                        document.getElementById('copyBox').textContent = copyText;
+                        document.getElementById('copyModal').classList.add('show');
+                    });
+                });
+            }
+            
+            // Copy Modal functionality
+            document.getElementById('copyToClipboard').addEventListener('click', function() {
+                const copyText = document.getElementById('copyBox').textContent;
+                navigator.clipboard.writeText(copyText).then(() => {
+                    alert('Credentials copied to clipboard!');
+                });
+            });
+            
+            document.getElementById('closeCopyModal').addEventListener('click', function() {
+                document.getElementById('copyModal').classList.remove('show');
+            });
+            
+            // Close modal when clicking outside
+            document.getElementById('copyModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.remove('show');
+                }
+            });
+            
+            // Terminal functionality
+            document.getElementById('executeCmd').addEventListener('click', function() {
+                const input = document.getElementById('cmdInput');
+                const output = document.getElementById('terminalOutput');
+                
+                if (input.value.trim()) {
+                    output.innerHTML += `\nroot@oxylus:~# ${input.value}`;
+                    
+                    // Simulate command response
+                    const responses = [
+                        'Command executed successfully.',
+                        'Processing completed.',
+                        'System updated.',
+                        'No errors detected.',
+                        'Operation in progress...'
+                    ];
+                    
+                    const response = responses[Math.floor(Math.random() * responses.length)];
+                    output.innerHTML += `\n${response}`;
+                    
+                    input.value = '';
+                    output.scrollTop = output.scrollHeight;
+                }
+            });
+            
+            document.getElementById('cmdInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.getElementById('executeCmd').click();
+                }
+            });
+            
+            // Initialize
+            updateProfileInfo();
+            
+            // Select DDoS attack by default
+            setTimeout(() => selectAttack('ddos'), 100);
+            
+            // Load accounts if on accounts module
+            if (window.location.hash === '#accounts') {
+                loadAccounts();
+            }
+        });
+    </script>
+</body>
+</html>
